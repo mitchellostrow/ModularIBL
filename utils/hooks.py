@@ -99,8 +99,8 @@ def create_hook_fns_analyze(checkpoint_grad_step):
         (0, utils.plot.hook_plot_task_stimuli_and_model_prob_in_first_n_trials),
         #(0, utils.plot.hook_plot_two_unit_task_trained_state_space_vector_fields_ideal),
         #(0, utils.plot.hook_plot_traditionally_distilled_state_space_vector_fields_ideal),
-        (0, utils.plot.hook_plot_model_recurrent_weight_avg_by_cluster),
-        (0, utils.plot.hook_plot_model_recurrent_weight_by_cluster),
+        #(0, utils.plot.hook_plot_model_recurrent_weight_avg_by_cluster),
+        #(0, utils.plot.hook_plot_model_recurrent_weight_by_cluster),
     ]
 
     # every frequency must be zero
