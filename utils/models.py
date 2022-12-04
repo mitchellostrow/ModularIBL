@@ -413,7 +413,7 @@ class RecurrentModel(nn.Module):
 
         super(RecurrentModel, self).__init__()
         self.model_str = model_architecture
-        assert model_architecture in {'rnn', 'lstm', 'gru'}
+        assert model_architecture in {'rnn', 'lstm', 'gru','ctrnn'}
         self.model_kwargs = model_kwargs
         self.input_size = model_kwargs['input_size']
         self.output_size = model_kwargs['output_size']
@@ -456,7 +456,7 @@ class RecurrentModel(nn.Module):
     def _create_core(self, model_architecture, model_kwargs):
         if model_architecture == 'lstm':
             core_constructor = nn.LSTM
-        elif model_architecture == 'rnn':
+        elif model_architecture in {'rnn','ctrnn'}:
             core_constructor = nn.RNN
         elif model_architecture == 'gru':
             core_constructor = nn.GRU
@@ -591,6 +591,7 @@ class RecurrentModel(nn.Module):
             frac_1_to_2 = float(fractions[1])
 
             frac_2_to_1 = float(fractions[2])
+
             #add block diagonal
             subblock_size = output_shape // 2
             connectivity_mask = scipy.linalg.block_diag(
@@ -601,6 +602,13 @@ class RecurrentModel(nn.Module):
                                                             )
             connectivity_mask[subblock_size:, :subblock_size] = np.random.binomial(n=1,p=frac_2_to_1, size=(subblock_size,subblock_size),
                                                             )
+            try:
+                autapses = fractions[3] #if its here
+                if autapses == 'noautapses':
+                    connectivity_mask[np.arange(input_shape),np.arange(input_shape)] = 0
+            except IndexError:
+                pass
+
         elif mask_type_str.startswith('inputblock'):
             block = int(mask_type_str.split('_')[1])
             connectivity_mask = np.zeros(shape=(output_shape, input_shape))
@@ -664,10 +672,17 @@ class RecurrentModel(nn.Module):
              torch.unsqueeze(model_input['reward'], dim=2)],  # TODO: check that this change didn't break anything
             dim=2)
 
-        core_output, self.core_hidden = self.core(
-            core_input,
-            self.core_hidden)
+        if self.model_str == 'ctrnn':
+            _, core_hidden_update = self.core(core_input,self.core_hidden)
+            self.core_hidden = self.core_hidden + \
+                            (1/self.tau)*(core_hidden_update - self.core_hidden)
+            core_output = self.core_hidden #in the below, they are the same too!
+        else:
+            core_output, self.core_hidden = self.core(
+                core_input,
+                self.core_hidden)
 
+       
         # hidden state is saved as (Number of RNN layers, Batch Size, Dimension)
         # swap so that hidden states is (Batch Size, Num of RNN Layers, Dimension)
         if self.model_str == 'rnn' or self.model_str == 'gru':
