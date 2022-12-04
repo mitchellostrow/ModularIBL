@@ -678,7 +678,7 @@ class RecurrentModel(nn.Module):
         if self.model_str == 'ctrnn':
             _, core_hidden_update = self.core(core_input,self.core_hidden)
             self.core_hidden = self.core_hidden + \
-                            (1/self.tau)*(core_hidden_update - self.core_hidden)
+                            (1/self.taus)*(core_hidden_update - self.core_hidden)
             core_output = self.core_hidden #in the below, they are the same too!
         else:
             core_output, self.core_hidden = self.core(
