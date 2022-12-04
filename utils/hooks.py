@@ -46,11 +46,11 @@ def create_hook_fns_analyze(checkpoint_grad_step):
         #(0, utils.plot.hook_plot_state_space_trajectories_different_block_same_stimuli),
         # (0, utils.plot.hook_plot_hidden_to_hidden_jacobian_time_constants),
         (0, hook_write_scalars),
-        (0, utils.plot.hook_plot_task_block_inference_multiple_blocks),
-        (0, utils.plot.hook_plot_task_block_inference_single_block),
+        #(0, utils.plot.hook_plot_task_block_inference_multiple_blocks),
+        #(0, utils.plot.hook_plot_task_block_inference_single_block),
         # (0, utils.plot.hook_plot_bayesian_coupled_observer_state_space_trajectories_within_block),
         # (0, utils.plot.hook_plot_analysis_psytrack_fit),
-        (0, utils.plot.hook_plot_behav_dts_per_trial_by_strength),
+        #(0, utils.plot.hook_plot_behav_dts_per_trial_by_strength),
         #(0, utils.plot.hook_plot_behav_bayesian_dts_per_trial_by_strength_correct_concordant),
         (0, utils.plot.hook_plot_behav_prob_correct_action_by_dts_within_trial),
         (0, utils.plot.hook_plot_behav_prob_correct_action_by_trial_within_block),
@@ -149,7 +149,7 @@ def create_hook_fns_train(start_grad_step,
         # (plot_freq, utils.plot.hook_plot_pca_hidden_state_fixed_points),
         # (10, utils.plot.hook_plot_psytrack_fit),
         # (10, utils.plot.hook_plot_hidden_to_hidden_jacobian_eigenvalues_complex_plane),
-        (5000, hook_save_model),
+        (1000, hook_save_model),
     ]
 
     train_hooks = create_hook_fns_dict(

@@ -6,7 +6,7 @@ train_params = {
             'output_size': 2,
             'core_kwargs': {
                 'num_layers': 1,
-                'hidden_size': 256},
+                'hidden_size': 50},
             'param_init': 'default',
             'connectivity_kwargs': {
                 'input_mask': 'none',
@@ -30,7 +30,7 @@ train_params = {
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 100001,
+        'num_grad_steps': 1001,
         'seed': 1,
     },
     'env': {

@@ -36,6 +36,7 @@ def train_model(model,
     stop = start + params['run']['num_grad_steps']
 
     for grad_step in range(start, stop):
+        print(grad_step)
         if hasattr(model, 'apply_connectivity_masks'):
             model.apply_connectivity_masks()
         if hasattr(model, 'reset_core_hidden'):

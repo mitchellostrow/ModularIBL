@@ -292,7 +292,7 @@ def run_envs(model,
         'session_index', 'block_index', 'trial_index']).size().mean()
 
     if log_results:
-
+        
         logging.info(f'Average Loss Per Dt: {avg_loss_per_dt.item()}')
 
         logging.info(f'# Action Trials / # Total Trials: '
