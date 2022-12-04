@@ -1,1 +1,0 @@
-rsync -avh rylansch@openmind7.mit.edu:/om2/user/rylansch/ann-rnns/runs/ runs/
