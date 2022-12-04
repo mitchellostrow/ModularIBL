@@ -413,7 +413,7 @@ class RecurrentModel(nn.Module):
 
         super(RecurrentModel, self).__init__()
         self.model_str = model_architecture
-        assert model_architecture in {'rnn', 'lstm', 'gru'}
+        assert model_architecture in {'rnn', 'lstm', 'gru','ctrnn'}
         self.model_kwargs = model_kwargs
         self.input_size = model_kwargs['input_size']
         self.output_size = model_kwargs['output_size']
@@ -456,7 +456,7 @@ class RecurrentModel(nn.Module):
     def _create_core(self, model_architecture, model_kwargs):
         if model_architecture == 'lstm':
             core_constructor = nn.LSTM
-        elif model_architecture == 'rnn':
+        elif model_architecture in {'rnn','ctrnn'}:
             core_constructor = nn.RNN
         elif model_architecture == 'gru':
             core_constructor = nn.GRU
@@ -644,10 +644,17 @@ class RecurrentModel(nn.Module):
              torch.unsqueeze(model_input['reward'], dim=2)],  # TODO: check that this change didn't break anything
             dim=2)
 
-        core_output, self.core_hidden = self.core(
-            core_input,
-            self.core_hidden)
+        if self.model_str == 'ctrnn':
+            _, core_hidden_update = self.core(core_input,self.core_hidden)
+            self.core_hidden = self.core_hidden + \
+                            (1/self.tau)*(core_hidden_update - self.core_hidden)
+            core_output = self.core_hidden #in the below, they are the same too!
+        else:
+            core_output, self.core_hidden = self.core(
+                core_input,
+                self.core_hidden)
 
+       
         # hidden state is saved as (Number of RNN layers, Batch Size, Dimension)
         # swap so that hidden states is (Batch Size, Num of RNN Layers, Dimension)
         if self.model_str == 'rnn' or self.model_str == 'gru':

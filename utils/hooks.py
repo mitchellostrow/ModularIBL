@@ -69,8 +69,9 @@ def create_hook_fns_analyze(checkpoint_grad_step):
         # (0, utils.plot.hook_plot_mice_reaction_time_by_strength_correct_concordant),
         # (0, utils.plot.hook_plot_mice_prob_correct_by_strength_trial_block),
         (0, utils.plot.hook_plot_model_effective_circuit),
-        (0, utils.plot.hook_plot_model_recurrent_weight_distributions),
+        #(0, utils.plot.hook_plot_model_recurrent_weight_distributions),
         (0, utils.plot.hook_plot_model_hidden_unit_fraction_var_explained),
+        #TODO: add a function to plot the correlation of radd to modules
         (0, utils.plot.hook_plot_radd_behav_prob_correct_by_strength_concordant),
         (0, utils.plot.hook_plot_radd_behav_prob_correct_by_trial_within_block),
         #(0, utils.plot.hook_plot_radd_state_space_distance_decoherence),
