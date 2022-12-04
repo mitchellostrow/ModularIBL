@@ -13,6 +13,7 @@ train_params = {
                 'recurrent_mask': 'modular_0.25_0.25',
                 'readout_mask': 'readoutblock_1',
             },
+            'timescale_distributions': 'block_gaussian_5_50',
         },
     },
     'optimizer': {

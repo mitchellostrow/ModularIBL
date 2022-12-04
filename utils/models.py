@@ -622,6 +622,26 @@ class RecurrentModel(nn.Module):
         connectivity_mask = torch.from_numpy(connectivity_mask).double()
         return connectivity_mask
 
+    def _create_timescales(self, model_kwargs):
+
+        hidden_size = model_kwargs['core_kwargs']['hidden_size']
+        
+        timescales_type_str = model_kwargs['timescale_distributions']
+        block_size = hidden_size // 2
+
+        DEFAULT_TAU = 5
+        self.taus = np.random.normal(loc=DEFAULT_TAU, scale=0.5, size=hidden_size)
+        if timescales_type_str.startswith('block'):
+            block1_tau = timescales_type_str.split('_')[2]
+            block2_tau = timescales_type_str.split('_')[3]
+            if timescales_type_str.split('_')[0] == 'gaussian':
+                block1_taus = np.random.normal(loc=block1_tau, scale=1, size=block_size)
+                block2_taus = np.random.normal(loc=block2_tau, scale=1, size=block_size)
+            elif timescales_type_str.split('_')[0] == 'fixed':
+                block1_taus = np.ones(block_size) * block1_tau
+                block2_taus = np.ones(block_size) * block2_tau
+            self.taus = np.concatentate(block1_taus, block2_taus)                 
+
     def forward(self, model_input):
         """
         Performs a forward pass through model.
