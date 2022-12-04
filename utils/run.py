@@ -94,7 +94,7 @@ def create_loss_fn(loss_fn_params):
 
 
 def create_model(model_params):
-    if model_params['architecture'] in {'rnn', 'lstm', 'gru'}:
+    if model_params['architecture'] in {'rnn', 'lstm', 'gru', 'ctrnn'}:
         model = utils.models.RecurrentModel(
             model_architecture=model_params['architecture'],
             model_kwargs=model_params['kwargs'])
@@ -273,6 +273,7 @@ def run_envs(model,
     session_data = extract_session_data(envs=envs)
 
     avg_loss_per_dt = total_loss / (total_rnn_steps * len(envs))
+    #TODO: add l1 loss on model weights here?
 
     action_taken_by_total_trials = session_data[
         session_data.trial_end == 1.].action_taken.mean()

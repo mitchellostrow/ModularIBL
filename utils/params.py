@@ -1,6 +1,6 @@
 train_params = {
     'model': {
-        'architecture': 'rnn',
+        'architecture': 'ctrnn',
         'kwargs': {
             'input_size': 3,
             'output_size': 2,

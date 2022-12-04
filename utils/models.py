@@ -432,7 +432,7 @@ class RecurrentModel(nn.Module):
 
         self.description_str = create_description_str(model=self)
 
-        self.core_hidden = None
+        self.reset_core_hidden()
         self.readout = nn.Linear(
             in_features=model_kwargs['core_kwargs']['hidden_size'],
             out_features=self.output_size,
@@ -522,7 +522,7 @@ class RecurrentModel(nn.Module):
                     model_kwargs['connectivity_kwargs'][mask_str] = 'none'
 
         # determine how much to inflate
-        if self.model_str == 'rnn':
+        if self.model_str in {'rnn','ctrnn'}:
             size_prefactor = 1
         elif self.model_str == 'gru':
             size_prefactor = 3
@@ -643,16 +643,17 @@ class RecurrentModel(nn.Module):
         DEFAULT_TAU = 5
         self.taus = np.random.normal(loc=DEFAULT_TAU, scale=0.5, size=hidden_size)
         if timescales_type_str.startswith('block'):
-            block1_tau = timescales_type_str.split('_')[2]
-            block2_tau = timescales_type_str.split('_')[3]
-            if timescales_type_str.split('_')[0] == 'gaussian':
+            block1_tau = float(timescales_type_str.split('_')[2])
+            block2_tau = float(timescales_type_str.split('_')[3])
+            if timescales_type_str.split('_')[1] == 'gaussian':
                 block1_taus = np.random.normal(loc=block1_tau, scale=1, size=block_size)
                 block2_taus = np.random.normal(loc=block2_tau, scale=1, size=block_size)
-            elif timescales_type_str.split('_')[0] == 'fixed':
+            elif timescales_type_str.split('_')[1] == 'fixed':
                 block1_taus = np.ones(block_size) * block1_tau
                 block2_taus = np.ones(block_size) * block2_tau
-            self.taus = np.concatentate(block1_taus, block2_taus)                 
-
+            self.taus = np.concatenate([block1_taus, block2_taus])                 
+            self.taus = torch.tensor(self.taus)
+            
     def forward(self, model_input):
         """
         Performs a forward pass through model.
@@ -676,9 +677,12 @@ class RecurrentModel(nn.Module):
             dim=2)
 
         if self.model_str == 'ctrnn':
+            import pdb
             _, core_hidden_update = self.core(core_input,self.core_hidden)
-            self.core_hidden = self.core_hidden + \
-                            (1/self.taus)*(core_hidden_update - self.core_hidden)
+            # pdb.set_trace()
+
+            self.core_hidden = nn.Parameter(self.core_hidden + \
+                            (1/self.taus)*(core_hidden_update - self.core_hidden))
             core_output = self.core_hidden #in the below, they are the same too!
         else:
             core_output, self.core_hidden = self.core(
@@ -688,7 +692,7 @@ class RecurrentModel(nn.Module):
        
         # hidden state is saved as (Number of RNN layers, Batch Size, Dimension)
         # swap so that hidden states is (Batch Size, Num of RNN Layers, Dimension)
-        if self.model_str == 'rnn' or self.model_str == 'gru':
+        if self.model_str in {'gru','rnn','ctrnn'}:
             core_hidden = self.core_hidden.transpose(0, 1)
         elif self.model_str == 'lstm':
             # hidden state is 2-tuple of (h_t, c_t). need to save both
@@ -719,7 +723,9 @@ class RecurrentModel(nn.Module):
         return forward_output
 
     def reset_core_hidden(self):
-        self.core_hidden = None
+        self.core_hidden = nn.Parameter(torch.zeros((1,1,
+                            self.model_kwargs['core_kwargs']['hidden_size']),
+                            dtype=torch.float64))
 
     def apply_connectivity_masks(self):
 
