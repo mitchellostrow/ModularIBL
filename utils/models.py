@@ -456,7 +456,10 @@ class RecurrentModel(nn.Module):
     def _create_core(self, model_architecture, model_kwargs):
         if model_architecture == 'lstm':
             core_constructor = nn.LSTM
-        elif model_architecture in {'rnn','ctrnn'}:
+        elif model_architecture == 'rnn':
+            core_constructor = nn.RNN
+        elif model_architecture == 'ctrnn':
+            self._create_timescales(model_kwargs)
             core_constructor = nn.RNN
         elif model_architecture == 'gru':
             core_constructor = nn.GRU
