@@ -1933,6 +1933,7 @@ def hook_plot_model_effective_circuit(hook_input):
     linkage = spc.linkage(pdist, method='complete')
     labels = spc.fcluster(linkage, 0.5 * np.max(pdist), 'distance')
     indices = np.argsort(labels)
+    #TODO: when applying the mask, don't sort by this?
 
     fig, axes = plt.subplots(
         nrows=1,

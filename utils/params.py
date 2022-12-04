@@ -6,12 +6,12 @@ train_params = {
             'output_size': 2,
             'core_kwargs': {
                 'num_layers': 1,
-                'hidden_size': 50},
+                'hidden_size': 10},
             'param_init': 'default',
             'connectivity_kwargs': {
-                'input_mask': 'none',
-                'recurrent_mask': 'none',
-                'readout_mask': 'none',
+                'input_mask': 'inputblock_2',
+                'recurrent_mask': 'modular_0.25_0.25',
+                'readout_mask': 'readoutblock_1',
             },
         },
     },
