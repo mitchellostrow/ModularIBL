@@ -591,6 +591,7 @@ class RecurrentModel(nn.Module):
             frac_1_to_2 = float(fractions[1])
 
             frac_2_to_1 = float(fractions[2])
+
             #add block diagonal
             subblock_size = output_shape // 2
             connectivity_mask = scipy.linalg.block_diag(
@@ -601,6 +602,13 @@ class RecurrentModel(nn.Module):
                                                             )
             connectivity_mask[subblock_size:, :subblock_size] = np.random.binomial(n=1,p=frac_2_to_1, size=(subblock_size,subblock_size),
                                                             )
+            try:
+                autapses = fractions[3] #if its here
+                if autapses == 'noautapses':
+                    connectivity_mask[np.arange(input_shape),np.arange(input_shape)] = 0
+            except IndexError:
+                pass
+
         elif mask_type_str.startswith('inputblock'):
             block = int(mask_type_str.split('_')[1])
             connectivity_mask = np.zeros(shape=(output_shape, input_shape))
