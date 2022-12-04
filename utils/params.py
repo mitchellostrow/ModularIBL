@@ -6,7 +6,7 @@ train_params = {
             'output_size': 2,
             'core_kwargs': {
                 'num_layers': 1,
-                'hidden_size': 50},
+                'hidden_size': 256},
             'param_init': 'default',
             'connectivity_kwargs': {
                 'input_mask': 'none',
@@ -18,7 +18,7 @@ train_params = {
     'optimizer': {
         'optimizer': 'sgd',
         'kwargs': {
-            'lr': 1e-3,
+            'lr': 1e-1,
             'momentum': 0.1,
             'nesterov': False,
             'weight_decay': 0,

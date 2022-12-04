@@ -1,13 +1,14 @@
 from itertools import product
 import logging
 import matplotlib.cm as cm
-from matplotlib.colors import DivergingNorm, ListedColormap
+from matplotlib.colors import ListedColormap
+#from matplotlib.colors import DivergingNorm, ListedColormap
 # import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-from psytrack.plot.analysisFunctions import makeWeightPlot
+#from psytrack.plot.analysisFunctions import makeWeightPlot
 import scipy.stats
 import scipy.cluster.hierarchy as spc
 import seaborn as sns
@@ -2565,74 +2566,74 @@ def hook_plot_radd_behav_prob_correct_by_trial_within_block(hook_input):
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
 
-def hook_plot_radd_state_space_effect_of_obs_along_task_aligned_vectors(hook_input):
-    radd_session_data = hook_input['radd_session_data']
+# def hook_plot_radd_state_space_effect_of_obs_along_task_aligned_vectors(hook_input):
+#     radd_session_data = hook_input['radd_session_data']
 
-    diff_obs = radd_session_data['right_stimulus'] - radd_session_data['left_stimulus']
-    radd_hidden_states = np.stack(radd_session_data.hidden_state.values, axis=0)
-    radd_hidden_states = radd_hidden_states.reshape(radd_hidden_states.shape[0], -1)
+#     diff_obs = radd_session_data['right_stimulus'] - radd_session_data['left_stimulus']
+#     radd_hidden_states = np.stack(radd_session_data.hidden_state.values, axis=0)
+#     radd_hidden_states = radd_hidden_states.reshape(radd_hidden_states.shape[0], -1)
 
-    radd_deltas = np.diff(
-        radd_hidden_states,
-        n=1,
-        axis=0)
+#     radd_deltas = np.diff(
+#         radd_hidden_states,
+#         n=1,
+#         axis=0)
 
-    # here, we need to do two things. first, exclude blank dts.
-    # second, make sure we align observations and state deltas correctly.
-    # the state at an index is the state AFTER the observation.
-    # consequently, we need to shift deltas back by one
+#     # here, we need to do two things. first, exclude blank dts.
+#     # second, make sure we align observations and state deltas correctly.
+#     # the state at an index is the state AFTER the observation.
+#     # consequently, we need to shift deltas back by one
 
-    during_trials_indices = radd_session_data.index[
-        (radd_session_data.left_stimulus != 0) & (radd_session_data.right_stimulus != 0)]
-    diff_obs = diff_obs[during_trials_indices]
-    radd_deltas = radd_deltas[during_trials_indices - 1]
+#     during_trials_indices = radd_session_data.index[
+#         (radd_session_data.left_stimulus != 0) & (radd_session_data.right_stimulus != 0)]
+#     diff_obs = diff_obs[during_trials_indices]
+#     radd_deltas = radd_deltas[during_trials_indices - 1]
 
-    num_cols = 2
-    fig, axes = plt.subplots(nrows=1,
-                             ncols=num_cols,
-                             sharex=True,
-                             sharey=True,
-                             gridspec_kw={"width_ratios": [1] * num_cols},
-                             figsize=(8, 3))
+#     num_cols = 2
+#     fig, axes = plt.subplots(nrows=1,
+#                              ncols=num_cols,
+#                              sharex=True,
+#                              sharey=True,
+#                              gridspec_kw={"width_ratios": [1] * num_cols},
+#                              figsize=(8, 3))
 
-    for col in range(num_cols):
-        ax = axes[col]
-        if col == 0:
-            ax.set_ylabel('Movement Along Stimulus Readout')
-        else:
-            ax.set_ylabel('Movement Along Block Readout')
+#     for col in range(num_cols):
+#         ax = axes[col]
+#         if col == 0:
+#             ax.set_ylabel('Movement Along Stimulus Readout')
+#         else:
+#             ax.set_ylabel('Movement Along Block Readout')
 
-        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(
-            diff_obs,
-            radd_deltas[:, col])
+#         slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(
+#             diff_obs,
+#             radd_deltas[:, col])
 
-        p_eqn = 'p<1e-5' if p_value < 1e-5 else f'p={np.round(p_value, 5)}'
-        line_eqn = f'y={np.round(slope, 2)}x+{np.round(intercept, 2)} ' \
-                   f'({p_eqn}, r={np.round(r_value, 2)})'
+#         p_eqn = 'p<1e-5' if p_value < 1e-5 else f'p={np.round(p_value, 5)}'
+#         line_eqn = f'y={np.round(slope, 2)}x+{np.round(intercept, 2)} ' \
+#                    f'({p_eqn}, r={np.round(r_value, 2)})'
 
-        # seaborn's lead dev refuses to enable displaying the best fit parameters
-        ensure_centered_at_zero = DivergingNorm(vmin=-4., vcenter=0., vmax=4.)
-        ax = sns.regplot(
-            x=diff_obs,
-            y=radd_deltas[:, col],
-            ax=ax,
-            # color=side_color_map['right'],
-            ci=99,
-            scatter_kws={'s': 1,  # marker size
-                         'color': orange_blue_cmap(ensure_centered_at_zero(radd_deltas[:, col]))
-                         },
-            line_kws={'color': side_color_map['ideal'],
-                      'label': line_eqn}
-        )
-        # this needs to go down here for some reason
-        ax.set_xlabel(r'$d_{n, t} = o_{n,t}^R - o_{n,t}^L$')
+#         # seaborn's lead dev refuses to enable displaying the best fit parameters
+#         ensure_centered_at_zero = DivergingNorm(vmin=-4., vcenter=0., vmax=4.)
+#         ax = sns.regplot(
+#             x=diff_obs,
+#             y=radd_deltas[:, col],
+#             ax=ax,
+#             # color=side_color_map['right'],
+#             ci=99,
+#             scatter_kws={'s': 1,  # marker size
+#                          'color': orange_blue_cmap(ensure_centered_at_zero(radd_deltas[:, col]))
+#                          },
+#             line_kws={'color': side_color_map['ideal'],
+#                       'label': line_eqn}
+#         )
+#         # this needs to go down here for some reason
+#         ax.set_xlabel(r'$d_{n, t} = o_{n,t}^R - o_{n,t}^L$')
 
-        ax.legend()
-    hook_input['tensorboard_writer'].add_figure(
-        tag='radd_state_space_effect_of_obs_along_task_aligned_vectors',
-        figure=fig,
-        global_step=hook_input['grad_step'],
-        close=True if hook_input['tag_prefix'] != 'analyze/' else False)
+#         ax.legend()
+#     hook_input['tensorboard_writer'].add_figure(
+#         tag='radd_state_space_effect_of_obs_along_task_aligned_vectors',
+#         figure=fig,
+#         global_step=hook_input['grad_step'],
+#         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
 
 def hook_plot_radd_state_space_projection_on_right_block_vector_by_trial_within_block(hook_input):
@@ -3003,70 +3004,70 @@ def hook_plot_radd_state_space_vector_fields_ideal(hook_input):
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
 
-def hook_plot_state_space_effect_of_obs_along_task_aligned_vectors(hook_input):
-    session_data = hook_input['session_data']
+# def hook_plot_state_space_effect_of_obs_along_task_aligned_vectors(hook_input):
+#     session_data = hook_input['session_data']
 
-    diff_obs = session_data['right_stimulus'] - session_data['left_stimulus']
-    task_aligned_deltas = np.diff(
-        hook_input['task_aligned_hidden_states'],
-        n=1,
-        axis=0)
+#     diff_obs = session_data['right_stimulus'] - session_data['left_stimulus']
+#     task_aligned_deltas = np.diff(
+#         hook_input['task_aligned_hidden_states'],
+#         n=1,
+#         axis=0)
 
-    # here, we need to do two things. first, exclude blank dts.
-    # second, make sure we align observations and state deltas correctly.
-    # the state at an index is the state AFTER the observation.
-    # consequently, we need to shift deltas back by one
+#     # here, we need to do two things. first, exclude blank dts.
+#     # second, make sure we align observations and state deltas correctly.
+#     # the state at an index is the state AFTER the observation.
+#     # consequently, we need to shift deltas back by one
 
-    during_trials_indices = session_data.index[
-        (session_data.left_stimulus != 0) & (session_data.right_stimulus != 0)]
-    diff_obs = diff_obs[during_trials_indices]
-    task_aligned_deltas = task_aligned_deltas[during_trials_indices - 1]
+#     during_trials_indices = session_data.index[
+#         (session_data.left_stimulus != 0) & (session_data.right_stimulus != 0)]
+#     diff_obs = diff_obs[during_trials_indices]
+#     task_aligned_deltas = task_aligned_deltas[during_trials_indices - 1]
 
-    num_cols = 2
-    fig, axes = plt.subplots(nrows=1,
-                             ncols=num_cols,
-                             gridspec_kw={"width_ratios": [1] * num_cols},
-                             figsize=(8, 3))
+#     num_cols = 2
+#     fig, axes = plt.subplots(nrows=1,
+#                              ncols=num_cols,
+#                              gridspec_kw={"width_ratios": [1] * num_cols},
+#                              figsize=(8, 3))
 
-    for col in range(num_cols):
-        ax = axes[col]
-        ax.axis('equal')  # set yscale to match xscale
-        if col == 0:
-            ax.set_ylabel('Movement Along Stimulus Readout')
-        else:
-            ax.set_ylabel('Movement Along Block Readout')
+#     for col in range(num_cols):
+#         ax = axes[col]
+#         ax.axis('equal')  # set yscale to match xscale
+#         if col == 0:
+#             ax.set_ylabel('Movement Along Stimulus Readout')
+#         else:
+#             ax.set_ylabel('Movement Along Block Readout')
 
-        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(
-            diff_obs,
-            task_aligned_deltas[:, col])
+#         slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(
+#             diff_obs,
+#             task_aligned_deltas[:, col])
 
-        p_eqn = 'p<1e-5' if p_value < 1e-5 else f'p={np.round(p_value, 5)}'
-        line_eqn = f'y={np.round(slope, 2)}x+{np.round(intercept, 2)} ' \
-                   f'({p_eqn}, r={np.round(r_value, 2)})'
+#         p_eqn = 'p<1e-5' if p_value < 1e-5 else f'p={np.round(p_value, 5)}'
+#         line_eqn = f'y={np.round(slope, 2)}x+{np.round(intercept, 2)} ' \
+#                    f'({p_eqn}, r={np.round(r_value, 2)})'
 
-        # seaborn's lead dev refuses to enable displaying the best fit parameters
-        ensure_centered_at_zero = DivergingNorm(vmin=-4., vcenter=0., vmax=4.)
-        ax = sns.regplot(
-            x=diff_obs,
-            y=task_aligned_deltas[:, col],
-            ax=ax,
-            # color=side_color_map['right'],
-            ci=99,
-            scatter_kws={'s': 1,  # marker size
-                         'color': orange_blue_cmap(ensure_centered_at_zero(task_aligned_deltas[:, col]))
-                         },
-            line_kws={'color': side_color_map['ideal'],
-                      'label': line_eqn}
-        )
-        # this needs to go down here for some reason
-        ax.set_xlabel(r'$d_{n, t} = o_{n,t}^R - o_{n,t}^L$')
+#         # seaborn's lead dev refuses to enable displaying the best fit parameters
+#         ensure_centered_at_zero = DivergingNorm(vmin=-4., vcenter=0., vmax=4.)
+#         ax = sns.regplot(
+#             x=diff_obs,
+#             y=task_aligned_deltas[:, col],
+#             ax=ax,
+#             # color=side_color_map['right'],
+#             ci=99,
+#             scatter_kws={'s': 1,  # marker size
+#                          'color': orange_blue_cmap(ensure_centered_at_zero(task_aligned_deltas[:, col]))
+#                          },
+#             line_kws={'color': side_color_map['ideal'],
+#                       'label': line_eqn}
+#         )
+#         # this needs to go down here for some reason
+#         ax.set_xlabel(r'$d_{n, t} = o_{n,t}^R - o_{n,t}^L$')
 
-        ax.legend()
-    hook_input['tensorboard_writer'].add_figure(
-        tag='state_space_effect_of_obs_along_task_aligned_vectors',
-        figure=fig,
-        global_step=hook_input['grad_step'],
-        close=True if hook_input['tag_prefix'] != 'analyze/' else False)
+#         ax.legend()
+#     hook_input['tensorboard_writer'].add_figure(
+#         tag='state_space_effect_of_obs_along_task_aligned_vectors',
+#         figure=fig,
+#         global_step=hook_input['grad_step'],
+#         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
 
 def hook_plot_state_space_effect_of_feedback_along_task_aligned_vectors(hook_input):

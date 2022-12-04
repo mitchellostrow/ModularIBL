@@ -262,6 +262,7 @@ def run_envs(model,
             actions_logits=model_output['linear_output'],
             core_hidden=model_output['core_hidden'],
             model=model)
+        #print(model_output['prob_output'])
 
     envs.close()
 
