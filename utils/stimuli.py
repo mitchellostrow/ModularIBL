@@ -55,38 +55,3 @@ def create_block_stimuli(num_trials,
         trial_sides=trial_sides)
 
     return output
-
-
-# class GratingCreator(StimulusCreator):
-#
-# TODO: fix this to create Gabor patches as specified
-#
-#     def __init__(self,
-#                  trial_strengths=None,
-#                  trial_strength_probs=None):
-#
-#         # defaults
-#         if trial_strengths is None:
-#             trial_strengths = [1, 0.5, 0.25, 0.125, 0.06, 0]
-#         if trial_strength_probs is None:
-#             trial_strength_probs = [2 / 11, 2 / 11, 2 / 11, 2 / 11, 2 / 11, 1 / 11]
-#
-#         super(GratingCreator, self).__init__(
-#             trial_strengths=trial_strengths,
-#             trial_strength_probs=trial_strength_probs)
-#
-#     def create_block_stimuli(self,
-#                              block_num_trials,
-#                              block_side_bias_probabilities):
-#
-#         sampled_strength = np.random.choice(
-#             self.trial_strengths,
-#             p=self.trial_strength_probs)
-#
-#
-#         if side == 'left':
-#             return GratingStim(tex='sin', mask='gauss')
-#         elif side == 'right':
-#             return GratingStim(tex='sin', mask='gauss')
-#         else:
-#             raise ValueError('Impermissible side: ', side)

@@ -56,13 +56,13 @@ def add_analysis_data_to_hook_input(hook_input):
         model_readout_weights=hook_input['model'].readout.weight.data.numpy())
 
     # not used in NeurIPS paper, I think. Comment made 2020-08-08
-    hidden_states_jl_results = compute_model_hidden_states_jl(
-        hidden_states=reshaped_hidden_states,
-        model_readout_weights=hook_input['model'].readout.weight.data.numpy())
+    # hidden_states_jl_results = compute_model_hidden_states_jl(
+    #     hidden_states=reshaped_hidden_states,
+    #     model_readout_weights=hook_input['model'].readout.weight.data.numpy())
 
-    model_state_space_vector_fields_results = compute_state_space_vector_fields(
-        session_data=hook_input['session_data'],
-        pca_hidden_states=hidden_states_pca_results['pca_hidden_states'])
+    # model_state_space_vector_fields_results = compute_state_space_vector_fields(
+    #     session_data=hook_input['session_data'],
+    #     pca_hidden_states=hidden_states_pca_results['pca_hidden_states'])
 
     model_block_readout_vectors_results = \
         compute_model_block_readout_vectors(
@@ -79,21 +79,21 @@ def add_analysis_data_to_hook_input(hook_input):
         pca_trial_readout_vector=hidden_states_pca_results['pca_trial_readout_vector'],
         pca_block_readout_vector=model_block_readout_vectors_results['pca_block_readout_vector'])
 
-    model_fixed_points_results = compute_model_fixed_points_by_stimulus_and_feedback(
-        model=hook_input['model'],
-        pca=hidden_states_pca_results['pca'],
-        pca_xrange=hidden_states_pca_results['pca_xrange'],
-        pca_yrange=hidden_states_pca_results['pca_yrange'],
-        jlm=hidden_states_jl_results['jlm'],
-        jlm_xrange=hidden_states_jl_results['jl_xrange'],
-        jlm_yrange=hidden_states_jl_results['jl_yrange'],
-        pca_hidden_states=hidden_states_pca_results['pca_hidden_states'],
-        trial_readout_vector=hidden_states_pca_results['trial_readout_vector'],
-        block_readout_vector=model_block_readout_vectors_results['block_readout_vector'],
-        num_grad_steps=500)
+    # model_fixed_points_results = compute_model_fixed_points_by_stimulus_and_feedback(
+    #     model=hook_input['model'],
+    #     pca=hidden_states_pca_results['pca'],
+    #     pca_xrange=hidden_states_pca_results['pca_xrange'],
+    #     pca_yrange=hidden_states_pca_results['pca_yrange'],
+    #     jlm=hidden_states_jl_results['jlm'],
+    #     jlm_xrange=hidden_states_jl_results['jl_xrange'],
+    #     jlm_yrange=hidden_states_jl_results['jl_yrange'],
+    #     pca_hidden_states=hidden_states_pca_results['pca_hidden_states'],
+    #     trial_readout_vector=hidden_states_pca_results['trial_readout_vector'],
+    #     block_readout_vector=model_block_readout_vectors_results['block_readout_vector'],
+    #     num_grad_steps=500)
 
-    eigenvalues_svd_results = compute_eigenvalues(
-        matrix=reshaped_hidden_states)
+    # eigenvalues_svd_results = compute_eigenvalues(
+    #     matrix=reshaped_hidden_states)
 
     run_two_unit_task_trained_model_results = run_two_unit_task_trained_model(
         envs=hook_input['envs'])
@@ -102,10 +102,10 @@ def add_analysis_data_to_hook_input(hook_input):
         model_to_distill=hook_input['model'],
         analyze_dir=hook_input['tensorboard_writer'].log_dir)
 
-    run_traditionally_distilled_model_results = run_traditionally_distilled_model(
-        traditionally_distilled_model=distill_model_traditional_results['traditionally_distilled_model'],
-        envs=hook_input['envs']
-    )
+    # run_traditionally_distilled_model_results = run_traditionally_distilled_model(
+    #     traditionally_distilled_model=distill_model_traditional_results['traditionally_distilled_model'],
+    #     envs=hook_input['envs']
+    # )
 
     distill_model_radd_results = distill_model_radd(
         session_data=hook_input['session_data'],
@@ -120,42 +120,42 @@ def add_analysis_data_to_hook_input(hook_input):
         input_matrix=distill_model_radd_results['B_prime'],
         bias_vector=distill_model_radd_results['intercept'])
 
-    # TODO: refactor this properly to get RADD vector field plots
-    smaller_models_fixed_points_results = compute_smaller_models_fixed_points_by_stimulus_and_feedback(
-            two_unit_task_trained_rnn=run_two_unit_task_trained_model_results['two_unit_task_trained_rnn'],
-            two_unit_task_trained_session_data=run_two_unit_task_trained_model_results[
-                'two_unit_task_trained_session_data'],
-            radd_rnn=run_radd_distilled_model_results['radd_model'],
-            radd_session_data=run_radd_distilled_model_results['radd_session_data'],
-            traditionally_distilled_rnn=distill_model_traditional_results['traditionally_distilled_model'],
-            traditionally_distilled_session_data=run_traditionally_distilled_model_results[
-                'traditionally_distilled_session_data'])
+    # # TODO: refactor this properly to get RADD vector field plots
+    # smaller_models_fixed_points_results = compute_smaller_models_fixed_points_by_stimulus_and_feedback(
+    #         two_unit_task_trained_rnn=run_two_unit_task_trained_model_results['two_unit_task_trained_rnn'],
+    #         two_unit_task_trained_session_data=run_two_unit_task_trained_model_results[
+    #             'two_unit_task_trained_session_data'],
+    #         radd_rnn=run_radd_distilled_model_results['radd_model'],
+    #         radd_session_data=run_radd_distilled_model_results['radd_session_data'],
+    #         traditionally_distilled_rnn=distill_model_traditional_results['traditionally_distilled_model'],
+    #         traditionally_distilled_session_data=run_traditionally_distilled_model_results[
+    #             'traditionally_distilled_session_data'])
 
-    optimal_observers_results = compute_optimal_observers(
-        envs=hook_input['envs'],
-        session_data=hook_input['session_data'],
-        rnn_steps_before_stimulus=hook_input['envs'][0].rnn_steps_before_obs,
-        time_delay_penalty=hook_input['envs'][0].time_delay_penalty)
+    # optimal_observers_results = compute_optimal_observers(
+    #     envs=hook_input['envs'],
+    #     session_data=hook_input['session_data'],
+    #     rnn_steps_before_stimulus=hook_input['envs'][0].rnn_steps_before_obs,
+    #     time_delay_penalty=hook_input['envs'][0].time_delay_penalty)
 
     # mice_behavior_data_results = load_mice_behavioral_data(
     #     mouse_behavior_dir_path='data/ibl-data-may2020')
 
     # add results to hook_input
     result_dicts = [
-        hidden_states_jl_results,
+        #hidden_states_jl_results,
         hidden_states_pca_results,
-        model_block_readout_vectors_results,
-        model_task_aligned_states_results,
-        model_fixed_points_results,
-        eigenvalues_svd_results,
+        #model_block_readout_vectors_results,
+        #model_task_aligned_states_results,
+        #model_fixed_points_results,
+        #eigenvalues_svd_results,
         distill_model_radd_results,
         distill_model_traditional_results,
         run_radd_distilled_model_results,
-        run_traditionally_distilled_model_results,
+        #run_traditionally_distilled_model_results,
         run_two_unit_task_trained_model_results,
-        model_state_space_vector_fields_results,
-        smaller_models_fixed_points_results,
-        optimal_observers_results,
+        #model_state_space_vector_fields_results,
+        #smaller_models_fixed_points_results,
+        #optimal_observers_results,
         # mice_behavior_data_results
     ]
     for result_dict in result_dicts:
@@ -178,61 +178,6 @@ def compute_eigenvalues(matrix):
         frac_variance_explained=frac_variance_explained)
 
     return eigenvalues_results
-
-
-# def compute_projected_hidden_state_trajectory_controlled(model,
-#                                                          pca):
-#     envs = create_custom_worlds(
-#         num_envs=1,
-#         blocks_per_session=12,
-#         tensorboard_writer=None)
-#     run_envs_output = run_envs(
-#         model=model,
-#         envs=envs)
-#     hidden_states = run_envs_output['hidden_states']
-#     projected_hidden_states = pca.transform(hidden_states.reshape(hidden_states.shape[0], -1))
-#
-#     trajectory_controlled_output = dict(
-#         session_data=run_envs_output['session_data'],
-#         hidden_states=hidden_states,
-#         projected_hidden_states=projected_hidden_states,
-#     )
-#
-#     return trajectory_controlled_output
-
-
-def compute_behav_psychometric_comparison_between_model_and_mice(session_data):
-    # only take consider last dt within a trial
-    action_data = session_data.loc[
-        session_data['action_taken'] == 1,
-        ['block_side', 'signed_trial_strength', 'action_side']]
-
-    # rescale from [-1, -1] to [0, 1]
-    action_data['action_side'] = (1 + action_data['action_side']) / 2
-
-    # normalize signed trial strengths to [-1, 1]
-    action_data['signed_trial_strength'] /= action_data['signed_trial_strength'].max()
-
-    # reset_index to add index (i.e. signed_trial_strength) as a column
-    rnn_right_block_psychometric_data = action_data[action_data.block_side == 1.].groupby(
-        ['signed_trial_strength']).agg(
-        {'action_side': ['size', 'mean']})['action_side'].reset_index().to_numpy()
-
-    mice_right_block_psychometric_data = np.array([
-        [],
-        [],
-        []
-    ])
-
-    from submodules.iblanalysis.python.psychofit import mle_fit_psycho
-
-    # threshold, slope, gamma1, gamma2
-    # my guesses:
-    # threshold (bias) is the contrast strength (x) at y=0.5
-    # slope is the slope from y=0.25 to y=0.75
-    # gamma is the lapse rate i.e. 1 - the upper right shoulder y value (or equivalently,
-    #       the lower left shoulder y value - 0)
-    rnn_params, rnn_mle = mle_fit_psycho(rnn_right_block_psychometric_data.T, 'erf_psycho')
 
 
 def compute_model_fixed_points(model,

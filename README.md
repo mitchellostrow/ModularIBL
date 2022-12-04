@@ -44,15 +44,3 @@ will be written to disk so that subsequent runs will take less time.
 - There are also remnants of directions we never explored. For instance, we considered
 playing with different parameter initializations and connectivity constraints (masks)
 but these were never actually used. 
-
-### Authors
-
-- Rylan Schaeffer
-- Mikail Khona
-- Leenoy Meshulam
-- Ila Rani Fiete
-
-### Questions? Concerns? Collaborations?
-
-We'd be delighted to hear from you. Email Rylan Schaeffer at rylanschaeffer@g.harvard.edu 
-and cc Ila Fiete at fiete@mit.edu.
