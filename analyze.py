@@ -11,11 +11,8 @@ import utils.run
 
 def analyze(train_run_id=None):
 
-    # train_run_id = 'rnn, block_side_probs=0.80, snr=2.5'
-    #train_run_id = 'ctrnn, max_stim_strength=2.5, hidden_size=100_2022-12-05 08-38-00.799669'
-    if train_run_id:
+    if train_run_id is None:
         train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=100_2022-12-05 08-20-29.995680'
-        #train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=250_2020-08-11 14:05:02.536133'
     setup_results = utils.run.setup_analyze(
         train_run_id=train_run_id)
 
@@ -35,6 +32,7 @@ def analyze(train_run_id=None):
 
     setup_results['tensorboard_writer'].close()
     logging.info('Completed successfully')
+    print('saved in', setup_results['tensorboard_writer'].log_dir)
 
 
 def analyze_model(model,
