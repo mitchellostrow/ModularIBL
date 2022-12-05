@@ -75,11 +75,13 @@ def add_analysis_data_to_hook_input(hook_input):
             trial_readout_vector=hidden_states_pca_results['trial_readout_vector'],
             pca_trial_readout_vector=hidden_states_pca_results['pca_trial_readout_vector'])
 
-    model_task_aligned_states_results = compute_model_task_aligned_states(
-        session_data=hook_input['session_data'],
-        pca_hidden_states=hidden_states_pca_results['pca_hidden_states'],
-        pca_trial_readout_vector=hidden_states_pca_results['pca_trial_readout_vector'],
-        pca_block_readout_vector=model_block_readout_vectors_results['pca_block_readout_vector'])
+
+
+    # model_task_aligned_states_results = compute_model_task_aligned_states(
+    #     session_data=hook_input['session_data'],
+    #     pca_hidden_states=hidden_states_pca_results['pca_hidden_states'],
+    #     pca_trial_readout_vector=hidden_states_pca_results['pca_trial_readout_vector'],
+    #     pca_block_readout_vector=model_block_readout_vectors_results['pca_block_readout_vector'])
 
     # model_fixed_points_results = compute_model_fixed_points_by_stimulus_and_feedback(
     #     model=hook_input['model'],
@@ -135,11 +137,11 @@ def add_analysis_data_to_hook_input(hook_input):
     #             'traditionally_distilled_session_data'])
 
     #TODO: uncomment when plotting accuracy of the model
-    optimal_observers_results = compute_optimal_observers(
-        envs=hook_input['envs'],
-        session_data=hook_input['session_data'],
-        rnn_steps_before_stimulus=hook_input['envs'][0].rnn_steps_before_obs,
-        time_delay_penalty=hook_input['envs'][0].time_delay_penalty)
+    # optimal_observers_results = compute_optimal_observers(
+    #     envs=hook_input['envs'],
+    #     session_data=hook_input['session_data'],
+    #     rnn_steps_before_stimulus=hook_input['envs'][0].rnn_steps_before_obs,
+    #     time_delay_penalty=hook_input['envs'][0].time_delay_penalty)
 
     # mice_behavior_data_results = load_mice_behavioral_data(
     #     mouse_behavior_dir_path='data/ibl-data-may2020')
@@ -149,7 +151,7 @@ def add_analysis_data_to_hook_input(hook_input):
         #hidden_states_jl_results,
         hidden_states_pca_results,
         modularity_pcs_dict,
-        #model_block_readout_vectors_results,
+        model_block_readout_vectors_results,
         #model_task_aligned_states_results,
         #model_fixed_points_results,
         eigenvalues_svd_results,
@@ -160,7 +162,7 @@ def add_analysis_data_to_hook_input(hook_input):
         #run_two_unit_task_trained_model_results,
         #model_state_space_vector_fields_results,
         #smaller_models_fixed_points_results,
-        optimal_observers_results,
+        # optimal_observers_results,
         # mice_behavior_data_results
     ]
     for result_dict in result_dicts:
@@ -1006,7 +1008,8 @@ def compute_model_block_readout_vectors(session_data,
             endog=train_block_sides,
             exog=train_regressor)
         logistic_regression_result = logistic_regression.fit()
-
+        if name == 'full':
+            logistic_regressors_full = logistic_regression
         # compute accuracy of classifier
         predicted_test_block_sides = logistic_regression_result.predict(test_regressor)
         block_classifier_accuracy = np.mean(
@@ -1015,7 +1018,6 @@ def compute_model_block_readout_vectors(session_data,
         classifier_accuracy[name] = block_classifier_accuracy
 
     session_data['classifier_block_side'] = 2. * logistic_regression_result.predict(pca_hidden_states) - 1.
-
     # select RIGHT block side readout vector
     pca_block_readout_vector = logistic_regression_result.params
     pca_block_readout_vector /= np.linalg.norm(pca_block_readout_vector)
@@ -1046,7 +1048,8 @@ def compute_model_block_readout_vectors(session_data,
         radians_btwn_pca_trial_block_vectors=radians_btwn_pca_trial_block_vectors,
         degrees_btwn_pca_trial_block_vectors=degrees_btwn_pca_trial_block_vectors,
         full_block_classifier_accuracy=classifier_accuracy['full'],
-        pca_block_classifier_accuracy=classifier_accuracy['pca'])
+        pca_block_classifier_accuracy=classifier_accuracy['pca'],
+        logistic_regressors_full = logistic_regressors_full)
 
     return block_readout_weights_results
 
@@ -2179,10 +2182,8 @@ def correlate_pcas_with_prototypes(hidden_states_pca_results):
             angle_bw_tp_names.append(name)
             c = np.dot(m,p)
             c = c / np.linalg.norm(m) / np.linalg.norm(p)
-            angle = np.arccos(c)
-            angle_bw_template_and_pc.append(angle)
+            angle_bw_template_and_pc.append(c)
     modularity_pcs_dict['angle_bw_template_and_pc'] = angle_bw_template_and_pc
     modularity_pcs_dict['angle_bw_tp_names'] = angle_bw_tp_names
     return modularity_pcs_dict
-
 

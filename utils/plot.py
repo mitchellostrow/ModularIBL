@@ -12,7 +12,6 @@ import pandas as pd
 import scipy.stats
 import scipy.cluster.hierarchy as spc
 import seaborn as sns
-
 import utils.analysis
 import utils.run
 
@@ -1682,7 +1681,6 @@ def hook_plot_hidden_to_hidden_jacobian_time_constants(hook_input):
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
-
 def hook_plot_model_recurrent_weight_by_cluster(hook_input):
 
     cutoff = 0.15
@@ -2033,10 +2031,32 @@ def hook_plot_model_effective_circuit(hook_input):
         figure=fig,
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
-
-    plot_weights_vs_correlations(hook_input, 
-                                hidden_state_self_correlations,
-                                recurrent_matrix)
+        
+def hook_plot_proj_readout_onto_template(hook_input):
+    trial_readout = hook_input['trial_readout_vector']
+    block_readout = hook_input['block_readout_vector']
+    hidden_shape = trial_readout.shape[0]
+    template_1, template_2 = np.zeros(hidden_shape), np.zeros(hidden_shape)
+    template_1[:hidden_shape//2] = 1
+    template_2[hidden_shape//2:] = 1
+    angle_bw_template_and_readout = []
+    angle_bw_tp_names = []
+    for i,m in enumerate([template_1,template_2]):
+        for j, r in enumerate([trial_readout,block_readout]):
+            name = f"$m_{i} \cdot r_{'trial' if j == 0 else 'block'}$"
+            angle_bw_tp_names.append(name)
+            c = np.dot(m,r)
+            c = c / np.linalg.norm(m) / np.linalg.norm(r)
+            angle_bw_template_and_readout.append(c)
+    fig,ax = plt.subplots(1,1)
+    ax.bar(angle_bw_tp_names,angle_bw_template_and_readout)
+    ax.set_xlabel("Projection")
+    ax.set_ylabel("Value")
+    hook_input['tensorboard_writer'].add_figure(
+        tag='readout_proj_onto_template',
+        figure=fig,
+        global_step=hook_input['grad_step'],
+        close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
 def hook_plot_pc_proj_onto_template(hook_input):
     angle_bw_template_and_pc = hook_input['angle_bw_template_and_pc']
@@ -2044,15 +2064,12 @@ def hook_plot_pc_proj_onto_template(hook_input):
     fig,ax = plt.subplots(1,1)
     ax.bar(angle_bw_tp_names,angle_bw_template_and_pc)
     ax.set_xlabel("Projection")
-    ax.set_ylabel("Angle (Rad)")
+    ax.set_ylabel("Value")
     hook_input['tensorboard_writer'].add_figure(
         tag='pc_proj_onto_template',
         figure=fig,
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
-
-    
-
 
 def hook_plot_model_recurrent_weight_distributions(hook_input):
     # TODO: this is duplicated code from hook_plot_model_effective_circuit()
@@ -2118,10 +2135,32 @@ def hook_plot_model_recurrent_weight_distributions(hook_input):
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
-def plot_weights_vs_correlations(hook_input,
-                                hidden_state_self_correlations,
-                                recurrent_matrix):
+def hook_plot_weights_vs_correlations(hook_input):
+    hidden_states = hook_input['hidden_states']
+    hidden_size = hidden_states.shape[2]
 
+    # reshape to (num trials, num layers * hidden dimension)
+    hidden_states = hidden_states.reshape(hidden_states.shape[0], -1)
+    trial_side = np.expand_dims(hook_input['session_data'].trial_side.values, 1)
+    trial_side_orthogonal = np.expand_dims(hook_input['session_data'].trial_side_orthogonal.values, 1)
+    block_side = np.expand_dims(hook_input['session_data'].block_side.values, 1)
+    feedback = np.expand_dims(hook_input['session_data'].reward.values, 1)
+
+    # construct correlation matrix
+    hidden_states_and_task_variables = np.hstack((
+        hidden_states,
+        trial_side,
+        trial_side_orthogonal,
+        block_side,
+        feedback))
+    hidden_states_and_task_variables_correlations = np.corrcoef(hidden_states_and_task_variables.T)
+    # due to machine error, correlation matrix isn't exactly symmetric (typically has e-16 errors)
+    # so make it symmetric
+    hidden_states_and_task_variables_correlations = (hidden_states_and_task_variables_correlations +
+                                                     hidden_states_and_task_variables_correlations.T) / 2
+    hidden_state_self_correlations = hidden_states_and_task_variables_correlations[:hidden_size, :hidden_size]
+    hidden_state_task_correlations = hidden_states_and_task_variables_correlations[:hidden_size, hidden_size:]
+    recurrent_matrix = hook_input['model'].core.weight_hh_l0.data.numpy()
     hidden_corrs = hidden_state_self_correlations.reshape(-1)
     weights = recurrent_matrix.reshape(-1)
     fig,ax = plt.subplots(1,2,figsize=(10,5))
@@ -3847,10 +3886,8 @@ def hook_plot_state_space_trajectories_within_trial(hook_input):
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
 
-
 def hook_plot_state_space_trials_by_classifier(hook_input):
     session_data = hook_input['session_data']
-
     # take only last dt within a trial
     # exclude blocks that are first in the session
     trial_end_data = session_data[session_data.trial_end == 1]

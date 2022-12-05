@@ -19,7 +19,7 @@ train_params = {
     'optimizer': {
         'optimizer': 'sgd',
         'kwargs': {
-            'lr': 1e-2,
+            'lr': 1e-1,
             'momentum': 0.1,
             'nesterov': False,
             'weight_decay': 0.1,
