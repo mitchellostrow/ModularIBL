@@ -1933,6 +1933,15 @@ def hook_plot_model_effective_circuit(hook_input):
     # indices = np.argsort(labels)
     indices = np.arange(hidden_size) #if we don't want to sort by hidden correlations
     #TODO: when applying the mask, don't sort by this?
+    def get_modularity_score(weights,hidden_size):
+        intra_weights = np.sum(np.abs(weights[:hidden_size//2,:hidden_size//2])) + \
+                        np.sum(np.abs(weights[hidden_size//2:hidden_size,hidden_size//2:hidden_size]))
+        inter_weights = np.sum(np.abs(weights[:hidden_size//2,hidden_size//2:hidden_size])) + \
+                        np.sum(np.abs(weights[hidden_size//2:hidden_size,:hidden_size//2]))
+        score = (intra_weights - inter_weights) / (intra_weights + inter_weights)
+        return round(score,4)
+
+    corr_modularity = get_modularity_score(hidden_state_self_correlations,hidden_size)
 
     fig, axes = plt.subplots(
         nrows=1,
@@ -1958,7 +1967,6 @@ def hook_plot_model_effective_circuit(hook_input):
     ax.set_xlabel('Hidden Unit Number')
     ax.set_ylabel('Hidden Unit Number')
     ax.set_aspect("equal")  # ensures little squares don't become rectangles
-
     # if hook_input['tag_prefix'] == 'analyze/':
     #     ax = axes[1]
     #     normalized_readout_vectors = np.concatenate(
@@ -1977,7 +1985,7 @@ def hook_plot_model_effective_circuit(hook_input):
     #     ax.set_ylabel('Hidden Unit Number')
 
     recurrent_matrix = hook_input['model'].core.weight_hh_l0.data.numpy()
-
+    recurrent_mod_score = get_modularity_score(recurrent_matrix,hidden_size)
     dimension_ratio = recurrent_matrix.shape[0] / recurrent_matrix.shape[1]
     # # RNN weight will have shape (hidden size, hidden size)
     if dimension_ratio == 1:
@@ -2004,10 +2012,11 @@ def hook_plot_model_effective_circuit(hook_input):
                 # yticklabels=indices,
                 square=True,
                 cbar_kws={'label': 'Weight Strength', 'shrink': 0.5})
-    ax.set_title('Recurrent Weight Strength')
+    ax.set_title('Recurrent Weights')
     ax.set_xlabel('Hidden Unit Number')
     # ax.set_ylabel('Hidden Unit Number')
     ax.set_aspect("equal")  # ensures little squares don't become rectangles
+    plt.suptitle(f"modularities:{corr_modularity},{recurrent_mod_score}",y=1.05)
 
     # hidden state vs task side, block side correlation
     # ax = axes[3]
@@ -2170,18 +2179,18 @@ def hook_plot_weights_vs_correlations(hook_input):
     corr = np.corrcoef(hidden_corrs,weights)[0][1]
     for i in range(2):
         if i == 0:
-            ax[i].scatter(weights,hidden_corrs)
-            ax[i].legend([corr])
+            ax[i].scatter(weights,hidden_corrs,s=1)
+            ax[i].legend([f"$R^2$:{corr}"])
         else:
             nhidden = hidden_state_self_correlations.shape[0]
             ax[i].scatter(recurrent_matrix[:nhidden//2,:nhidden//2],
-                           hidden_state_self_correlations[:nhidden//2,:nhidden//2],label="M1")
+                           hidden_state_self_correlations[:nhidden//2,:nhidden//2],label="M1",s=1)
             ax[i].scatter(recurrent_matrix[nhidden//2:,nhidden//2:],
-                           hidden_state_self_correlations[nhidden//2:,nhidden//2:],label="M2")
+                           hidden_state_self_correlations[nhidden//2:,nhidden//2:],label="M2",s=1)
             ax[i].scatter(recurrent_matrix[nhidden//2:,:nhidden//2],
-                           hidden_state_self_correlations[nhidden//2:,:nhidden//2],label="1->2")
+                           hidden_state_self_correlations[nhidden//2:,:nhidden//2],label="1->2",s=1)
             ax[i].scatter(recurrent_matrix[:nhidden//2,nhidden//2:],
-                           hidden_state_self_correlations[:nhidden//2,nhidden//2:],label="2->1")
+                           hidden_state_self_correlations[:nhidden//2,nhidden//2:],label="2->1",s=1)
             ax[i].legend()
 
         ax[i].set_xlabel("Recurrent Weights")
@@ -2193,7 +2202,6 @@ def hook_plot_weights_vs_correlations(hook_input):
         figure=fig,
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
-
 
 def hook_plot_model_hidden_unit_fraction_var_explained(hook_input):
     fig, ax = plt.subplots(figsize=(4, 3))
