@@ -9,7 +9,7 @@ train_params = {
                 'hidden_size': 100},
             'param_init': 'default',
             'connectivity_kwargs': {
-                'input_mask': 'inputblock_1',
+                'input_mask': 'inputblock_2',
                 'recurrent_mask': 'modular_0.02_0.02',
                 'readout_mask': 'readoutblock_1',
             },

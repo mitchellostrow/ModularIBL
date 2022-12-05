@@ -3,6 +3,7 @@ import numpy as np
 from utils.analysis import compute_eigenvalues
 import utils.run
 from analyze import analyze
+from tqdm import tqdm
 
 def train():
 
@@ -36,7 +37,7 @@ def train_model(model,
     start = params['run']['start_grad_step']
     stop = start + params['run']['num_grad_steps']
 
-    for grad_step in range(start, stop):
+    for grad_step in tqdm(range(start, stop)):
         print(grad_step)
         if hasattr(model, 'apply_connectivity_masks'):
             model.apply_connectivity_masks()

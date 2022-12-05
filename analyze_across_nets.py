@@ -62,13 +62,13 @@ def extract_data_from_directories(network_params,modularity_data):
         df.loc[i] = network_data
     return df
             
-
 def plot_modularity_data(df):
     '''
     
     '''
-    pass
+    
 
 if __name__ == "__main__":
     network_params,modularity_data = get_params_and_modularities_paths()
     df = extract_data_from_directories(network_params,modularity_data)
+    print(df)

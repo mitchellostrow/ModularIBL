@@ -382,7 +382,7 @@ def setup_train():
 
     params = create_params_train()
     run_id = create_run_id(params=params)
-    run_dir = os.path.join(log_dir, run_id + '_' + str(datetime.now()))
+    run_dir = os.path.join(log_dir, run_id + '_' + str(datetime.now()).replace(":","-"))
     os.makedirs(run_dir, exist_ok=True)
 
     create_logger(run_dir=run_dir)
