@@ -2035,6 +2035,9 @@ def hook_plot_model_effective_circuit(hook_input):
 def hook_plot_proj_readout_onto_template(hook_input):
     trial_readout = hook_input['trial_readout_vector'].squeeze()
     block_readout = hook_input['block_readout_vector'].squeeze()
+    #absolute value to make our metric make sense!
+    trial_readout = np.abs(trial_readout)
+    block_readout = np.abs(block_readout)
     hidden_shape = trial_readout.size
     template_1, template_2 = np.zeros(hidden_shape), np.zeros(hidden_shape)
     template_1[:hidden_shape//2] = 1

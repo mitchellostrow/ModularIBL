@@ -2152,7 +2152,6 @@ def test_points_in_hull(p, hull):
 
     return hull.find_simplex(p) >= 0
 
-
 def correlate_pcas_with_prototypes(hidden_states_pca_results):
     '''
     input is a dict with structure:
@@ -2165,6 +2164,7 @@ def correlate_pcas_with_prototypes(hidden_states_pca_results):
         pca_trial_readout_vector=pca_trial_readout_vector)
     '''
     components = hidden_states_pca_results['pca'].components_
+    components = np.abs(components) #all positive bc - signs make metric confusing
     hidden_shape = components.shape[1]
     template_1, template_2 = np.zeros(hidden_shape), np.zeros(hidden_shape)
     template_1[:hidden_shape//2] = 1
