@@ -2033,9 +2033,9 @@ def hook_plot_model_effective_circuit(hook_input):
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
         
 def hook_plot_proj_readout_onto_template(hook_input):
-    trial_readout = hook_input['trial_readout_vector']
-    block_readout = hook_input['block_readout_vector']
-    hidden_shape = trial_readout.shape[0]
+    trial_readout = hook_input['trial_readout_vector'].squeeze()
+    block_readout = hook_input['block_readout_vector'].squeeze()
+    hidden_shape = trial_readout.size
     template_1, template_2 = np.zeros(hidden_shape), np.zeros(hidden_shape)
     template_1[:hidden_shape//2] = 1
     template_2[hidden_shape//2:] = 1
@@ -2043,7 +2043,7 @@ def hook_plot_proj_readout_onto_template(hook_input):
     angle_bw_tp_names = []
     for i,m in enumerate([template_1,template_2]):
         for j, r in enumerate([trial_readout,block_readout]):
-            name = f"$m_{i} \cdot r_{'trial' if j == 0 else 'block'}$"
+            name = f"$m_{i} \cdot r_{'{trial}' if j == 0 else '{block}'}$"
             angle_bw_tp_names.append(name)
             c = np.dot(m,r)
             c = c / np.linalg.norm(m) / np.linalg.norm(r)
