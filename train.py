@@ -8,17 +8,19 @@ from tqdm import tqdm
 def train():
 
     setup_results = utils.run.setup_train()
-    train_model(
-        model=setup_results['model'],
-        envs=setup_results['envs'],
-        optimizer=setup_results['optimizer'],
-        scheduler=setup_results['scheduler'],
-        fn_hook_dict=setup_results['fn_hook_dict'],
-        params=setup_results['params'],
-        tensorboard_writer=setup_results['tensorboard_writer'])
+    output = train_model(
+            model=setup_results['model'],
+            envs=setup_results['envs'],
+            optimizer=setup_results['optimizer'],
+            scheduler=setup_results['scheduler'],
+            fn_hook_dict=setup_results['fn_hook_dict'],
+            params=setup_results['params'],
+            tensorboard_writer=setup_results['tensorboard_writer'])
 
     setup_results['tensorboard_writer'].close()
-    analyze(setup_results['tensorboard_writer'].log_dir[5:])
+    #only analyze if it's trained
+    if output['hook_input']['correct_action_taken_by_total_trials'] >= 0.5:
+        analyze(setup_results['tensorboard_writer'].log_dir[5:])
 
 def train_model(model,
                 envs,
@@ -84,7 +86,8 @@ def train_model(model,
 
     train_model_output = dict(
         grad_step=grad_step,
-        run_envs_output=run_envs_output
+        run_envs_output=run_envs_output,
+        hook_input = hook_input
     )
 
     return train_model_output
