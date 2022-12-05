@@ -2,12 +2,11 @@ import numpy as np
 
 from utils.analysis import compute_eigenvalues
 import utils.run
-
+from analyze import analyze
 
 def train():
 
     setup_results = utils.run.setup_train()
-
     train_model(
         model=setup_results['model'],
         envs=setup_results['envs'],
@@ -18,7 +17,7 @@ def train():
         tensorboard_writer=setup_results['tensorboard_writer'])
 
     setup_results['tensorboard_writer'].close()
-
+    analyze(setup_results['tensorboard_writer'].log_dir)
 
 def train_model(model,
                 envs,

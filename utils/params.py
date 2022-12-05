@@ -1,6 +1,6 @@
 train_params = {
     'model': {
-        'architecture': 'ctrnn',
+        'architecture': 'rnn',
         'kwargs': {
             'input_size': 3,
             'output_size': 2,
@@ -9,17 +9,17 @@ train_params = {
                 'hidden_size': 100},
             'param_init': 'default',
             'connectivity_kwargs': {
-                'input_mask': 'none',#'inputblock_1',
-                'recurrent_mask': 'none',#'modular_0.02_0.02',
-                'readout_mask': 'none',#'readoutblock_1',
+                'input_mask': 'inputblock_1',
+                'recurrent_mask': 'modular_0.02_0.02',
+                'readout_mask': 'readoutblock_1',
             },
-            'timescale_distributions': 'block_gaussian_5_50',
+            'timescale_distributions': 'block_gaussian_4_50',
         },
     },
     'optimizer': {
         'optimizer': 'sgd',
         'scheduler':{
-            'gamma':1.0, #don't set this to be much less than 1
+            'gamma':0.999, #don't set this to be much less than 1
         },
         'kwargs': {
             'lr': 1e-1,
@@ -34,8 +34,8 @@ train_params = {
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 2001,
-        'seed': 1,
+        'num_grad_steps': 1001,
+        'seed': 2,
     },
     'env': {
         'num_sessions': 1,  # batch size

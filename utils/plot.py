@@ -2017,7 +2017,16 @@ def hook_plot_model_effective_circuit(hook_input):
     # ax.set_ylabel('Hidden Unit Number')
     ax.set_aspect("equal")  # ensures little squares don't become rectangles
     plt.suptitle(f"modularities:{corr_modularity},{recurrent_mod_score}",y=1.05)
+    
+    hidden_corrs = hidden_state_self_correlations.reshape(-1)
+    weights = recurrent_matrix.reshape(-1)
+    corr = np.corrcoef(hidden_corrs,weights)[0][1]
 
+    data = {'metric': ['hidden_modularity','weight_modularity','hidden_corr'],
+            'value':[corr_modularity,recurrent_mod_score,corr]}
+    path = os.path.join(hook_input['tensorboard_writer'].log_dir,
+                             "modularity_data.csv")
+    pd.DataFrame.from_dict(data).to_csv(path)
     # hidden state vs task side, block side correlation
     # ax = axes[3]
     # sns.heatmap(hidden_state_task_correlations[indices, :],
