@@ -55,6 +55,8 @@ def add_analysis_data_to_hook_input(hook_input):
         hidden_states=reshaped_hidden_states,
         model_readout_weights=hook_input['model'].readout.weight.data.numpy())
 
+    modularity_pcs_dict = correlate_pcas_with_prototypes(hidden_states_pca_results)
+
     # not used in NeurIPS paper, I think. Comment made 2020-08-08
     # hidden_states_jl_results = compute_model_hidden_states_jl(
     #     hidden_states=reshaped_hidden_states,
@@ -107,18 +109,19 @@ def add_analysis_data_to_hook_input(hook_input):
     #     envs=hook_input['envs']
     # )
 
-    distill_model_radd_results = distill_model_radd(
-        session_data=hook_input['session_data'],
-        pca=hidden_states_pca_results['pca'],
-        task_aligned_hidden_states=model_task_aligned_states_results['task_aligned_hidden_states'])
+    # distill_model_radd_results = distill_model_radd(
+    #     session_data=hook_input['session_data'],
+    #     pca=hidden_states_pca_results['pca'],
+    #     task_aligned_hidden_states=model_task_aligned_states_results['task_aligned_hidden_states'])
 
-    run_radd_distilled_model_results = run_radd_distilled_model(
-        model_readout_norm=np.linalg.norm(hook_input['model'].readout.weight.data.numpy()),
-        model_hidden_dim=hook_input['model'].model_kwargs['core_kwargs']['hidden_size'],
-        envs=hook_input['envs'],
-        recurrent_matrix=distill_model_radd_results['A_prime'],
-        input_matrix=distill_model_radd_results['B_prime'],
-        bias_vector=distill_model_radd_results['intercept'])
+    # run_radd_distilled_model_results = run_radd_distilled_model(
+    #     model_readout_norm=np.linalg.norm(hook_input['model'].readout.weight.data.numpy()),
+    #     model_hidden_dim=hook_input['model'].model_kwargs['core_kwargs']['hidden_size'],
+    #     envs=hook_input['envs'],
+    #     recurrent_matrix=distill_model_radd_results['A_prime'],
+    #     input_matrix=distill_model_radd_results['B_prime'],
+    #     bias_vector=distill_model_radd_results['intercept'])
+
 
     # # TODO: refactor this properly to get RADD vector field plots
     # smaller_models_fixed_points_results = compute_smaller_models_fixed_points_by_stimulus_and_feedback(
@@ -131,6 +134,7 @@ def add_analysis_data_to_hook_input(hook_input):
     #         traditionally_distilled_session_data=run_traditionally_distilled_model_results[
     #             'traditionally_distilled_session_data'])
 
+    #TODO: uncomment when plotting accuracy of the model
     optimal_observers_results = compute_optimal_observers(
         envs=hook_input['envs'],
         session_data=hook_input['session_data'],
@@ -144,13 +148,14 @@ def add_analysis_data_to_hook_input(hook_input):
     result_dicts = [
         #hidden_states_jl_results,
         hidden_states_pca_results,
+        modularity_pcs_dict,
         #model_block_readout_vectors_results,
         #model_task_aligned_states_results,
         #model_fixed_points_results,
         eigenvalues_svd_results,
-        distill_model_radd_results,
+        #distill_model_radd_results,
         #distill_model_traditional_results,
-        run_radd_distilled_model_results,
+        #run_radd_distilled_model_results,
         #run_traditionally_distilled_model_results,
         #run_two_unit_task_trained_model_results,
         #model_state_space_vector_fields_results,
@@ -2143,3 +2148,41 @@ def test_points_in_hull(p, hull):
         hull = Delaunay(hull)
 
     return hull.find_simplex(p) >= 0
+
+
+def correlate_pcas_with_prototypes(hidden_states_pca_results):
+    '''
+    input is a dict with structure:
+     hidden_states_pca_results = dict(
+        pca_hidden_states=pca_hidden_states,
+        pca_xrange=(min_x, max_x),
+        pca_yrange=(min_y, max_y),
+        pca=pca,
+        trial_readout_vector=trial_readout_vector,
+        pca_trial_readout_vector=pca_trial_readout_vector)
+    '''
+    components = hidden_states_pca_results['pca'].components_
+    hidden_shape = components.shape[1]
+    template_1, template_2 = np.zeros(hidden_shape), np.zeros(hidden_shape)
+    template_1[:hidden_shape//2] = 1
+    template_2[hidden_shape//2:] = 1
+    modularity_pcs_dict = dict(
+        template_1 = template_2,
+        template_2 = template_2,
+        pca_components = components
+    )
+    angle_bw_template_and_pc = []
+    angle_bw_tp_names = []
+    for i,m in enumerate([template_1,template_2]):
+        for j, p in enumerate(components):
+            name = f"$m_{i} \cdot pc_{j}$"
+            angle_bw_tp_names.append(name)
+            c = np.dot(m,p)
+            c = c / np.linalg.norm(m) / np.linalg.norm(p)
+            angle = np.arccos(c)
+            angle_bw_template_and_pc.append(angle)
+    modularity_pcs_dict['angle_bw_template_and_pc'] = angle_bw_template_and_pc
+    modularity_pcs_dict['angle_bw_tp_names'] = angle_bw_tp_names
+    return modularity_pcs_dict
+
+

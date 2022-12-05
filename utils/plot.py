@@ -1932,7 +1932,8 @@ def hook_plot_model_effective_circuit(hook_input):
     pdist = spc.distance.pdist(hidden_state_self_correlations)
     linkage = spc.linkage(pdist, method='complete')
     labels = spc.fcluster(linkage, 0.5 * np.max(pdist), 'distance')
-    indices = np.argsort(labels)
+    # indices = np.argsort(labels)
+    indices = np.arange(hidden_size) #if we don't want to sort by hidden correlations
     #TODO: when applying the mask, don't sort by this?
 
     fig, axes = plt.subplots(
@@ -1978,6 +1979,7 @@ def hook_plot_model_effective_circuit(hook_input):
     #     ax.set_ylabel('Hidden Unit Number')
 
     recurrent_matrix = hook_input['model'].core.weight_hh_l0.data.numpy()
+
     dimension_ratio = recurrent_matrix.shape[0] / recurrent_matrix.shape[1]
     # # RNN weight will have shape (hidden size, hidden size)
     if dimension_ratio == 1:
@@ -2031,6 +2033,25 @@ def hook_plot_model_effective_circuit(hook_input):
         figure=fig,
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)
+
+    plot_weights_vs_correlations(hook_input, 
+                                hidden_state_self_correlations,
+                                recurrent_matrix)
+
+def hook_plot_pc_proj_onto_template(hook_input):
+    angle_bw_template_and_pc = hook_input['angle_bw_template_and_pc']
+    angle_bw_tp_names = hook_input['angle_bw_tp_names']
+    fig,ax = plt.subplots(1,1)
+    ax.bar(angle_bw_tp_names,angle_bw_template_and_pc)
+    ax.set_xlabel("Projection")
+    ax.set_ylabel("Angle (Rad)")
+    hook_input['tensorboard_writer'].add_figure(
+        tag='pc_proj_onto_template',
+        figure=fig,
+        global_step=hook_input['grad_step'],
+        close=True if hook_input['tag_prefix'] != 'analyze/' else False)
+
+    
 
 
 def hook_plot_model_recurrent_weight_distributions(hook_input):
@@ -2093,6 +2114,40 @@ def hook_plot_model_recurrent_weight_distributions(hook_input):
 
     hook_input['tensorboard_writer'].add_figure(
         tag='model_recurrent_weight_distributions',
+        figure=fig,
+        global_step=hook_input['grad_step'],
+        close=True if hook_input['tag_prefix'] != 'analyze/' else False)
+
+def plot_weights_vs_correlations(hook_input,
+                                hidden_state_self_correlations,
+                                recurrent_matrix):
+
+    hidden_corrs = hidden_state_self_correlations.reshape(-1)
+    weights = recurrent_matrix.reshape(-1)
+    fig,ax = plt.subplots(1,2,figsize=(10,5))
+    corr = np.corrcoef(hidden_corrs,weights)[0][1]
+    for i in range(2):
+        if i == 0:
+            ax[i].scatter(weights,hidden_corrs)
+            ax[i].legend([corr])
+        else:
+            nhidden = hidden_state_self_correlations.shape[0]
+            ax[i].scatter(recurrent_matrix[:nhidden//2,:nhidden//2],
+                           hidden_state_self_correlations[:nhidden//2,:nhidden//2],label="M1")
+            ax[i].scatter(recurrent_matrix[nhidden//2:,nhidden//2:],
+                           hidden_state_self_correlations[nhidden//2:,nhidden//2:],label="M2")
+            ax[i].scatter(recurrent_matrix[nhidden//2:,:nhidden//2],
+                           hidden_state_self_correlations[nhidden//2:,:nhidden//2],label="1->2")
+            ax[i].scatter(recurrent_matrix[:nhidden//2,nhidden//2:],
+                           hidden_state_self_correlations[:nhidden//2,nhidden//2:],label="2->1")
+            ax[i].legend()
+
+        ax[i].set_xlabel("Recurrent Weights")
+        ax[i].set_ylabel("Hidden Unit Correlations")
+        
+
+    hook_input['tensorboard_writer'].add_figure(
+        tag='recurrent_weight_hiden_correlation',
         figure=fig,
         global_step=hook_input['grad_step'],
         close=True if hook_input['tag_prefix'] != 'analyze/' else False)

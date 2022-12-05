@@ -12,7 +12,7 @@ import utils.run
 def analyze():
 
     # train_run_id = 'rnn, block_side_probs=0.80, snr=2.5'
-    train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=100_2022-12-04 17-05-14.576247'
+    train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=100_2022-12-04 19-33-35.563882'
     #train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=250_2020-08-11 14:05:02.536133'
     setup_results = utils.run.setup_analyze(
         train_run_id=train_run_id)

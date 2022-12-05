@@ -677,17 +677,12 @@ class RecurrentModel(nn.Module):
             dim=2)
 
         if self.model_str == 'ctrnn':
-            import pdb
             _, core_hidden_update = self.core(core_input,self.core_hidden)
-            # pdb.set_trace()
-
             self.core_hidden = nn.Parameter(self.core_hidden + \
                             (1/self.taus)*(core_hidden_update - self.core_hidden))
             core_output = self.core_hidden #in the below, they are the same too!
         else:
-            core_output, self.core_hidden = self.core(
-                core_input,
-                self.core_hidden)
+            core_output, self.core_hidden = self.core(core_input,self.core_hidden)
 
        
         # hidden state is saved as (Number of RNN layers, Batch Size, Dimension)
@@ -723,9 +718,12 @@ class RecurrentModel(nn.Module):
         return forward_output
 
     def reset_core_hidden(self):
-        self.core_hidden = nn.Parameter(torch.zeros((1,1,
-                            self.model_kwargs['core_kwargs']['hidden_size']),
-                            dtype=torch.float64))
+        if self.model_str == 'ctrnn':
+            self.core_hidden = nn.Parameter(torch.zeros((1,1,
+                                self.model_kwargs['core_kwargs']['hidden_size']),
+                                dtype=torch.float64))
+        else:
+            self.core_hidden = None
 
     def apply_connectivity_masks(self):
 

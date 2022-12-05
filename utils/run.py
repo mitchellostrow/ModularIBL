@@ -241,6 +241,7 @@ def load_checkpoint(train_run_dir,
 
 def run_envs(model,
              envs,
+             l1_lambda = 0,
              log_results=True):
 
     total_reward = torch.zeros(1, dtype=torch.double, requires_grad=True)
@@ -273,6 +274,9 @@ def run_envs(model,
     session_data = extract_session_data(envs=envs)
 
     avg_loss_per_dt = total_loss / (total_rnn_steps * len(envs))
+    if l1_lambda >= 0:
+        pass
+        #avg_loss_per_dt += model.
     #TODO: add l1 loss on model weights here?
 
     action_taken_by_total_trials = session_data[
