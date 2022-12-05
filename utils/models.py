@@ -678,8 +678,13 @@ class RecurrentModel(nn.Module):
 
         if self.model_str == 'ctrnn':
             _, core_hidden_update = self.core(core_input,self.core_hidden)
-            self.core_hidden = nn.Parameter(self.core_hidden + \
-                            (1/self.taus)*(core_hidden_update - self.core_hidden))
+            if self.core_hidden is not None:
+
+                self.core_hidden = self.core_hidden + \
+                                (1/self.taus)*(core_hidden_update - self.core_hidden)
+            else:
+                self.core_hidden = core_hidden_update / self.taus
+
             core_output = self.core_hidden #in the below, they are the same too!
         else:
             core_output, self.core_hidden = self.core(core_input,self.core_hidden)
@@ -719,9 +724,10 @@ class RecurrentModel(nn.Module):
 
     def reset_core_hidden(self):
         if self.model_str == 'ctrnn':
-            self.core_hidden = nn.Parameter(torch.zeros((1,1,
-                                self.model_kwargs['core_kwargs']['hidden_size']),
-                                dtype=torch.float64))
+            self.core_hidden = None
+        #     self.core_hidden = nn.Parameter(torch.zeros((1,1,
+        #                         self.model_kwargs['core_kwargs']['hidden_size']),
+        #                         dtype=torch.float64))
         else:
             self.core_hidden = None
 

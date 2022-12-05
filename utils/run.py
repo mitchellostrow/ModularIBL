@@ -394,6 +394,10 @@ def setup_train():
     optimizer = create_optimizer(
         model=model,
         optimizer_params=params['optimizer'])
+
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer,params['optimizer']['scheduler']['gamma'])
+    assert params['optimizer']['scheduler']['gamma'] >= 0.98 #should be large for now
+
     loss_fn = create_loss_fn(
         loss_fn_params=params['loss_fn'])
     fn_hook_dict = utils.hooks.create_hook_fns_train(
@@ -410,6 +414,7 @@ def setup_train():
         tensorboard_writer=tensorboard_writer,
         model=model,
         optimizer=optimizer,
+        scheduler=scheduler,
         loss_fn=loss_fn,
         fn_hook_dict=fn_hook_dict,
         envs=envs

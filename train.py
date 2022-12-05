@@ -12,6 +12,7 @@ def train():
         model=setup_results['model'],
         envs=setup_results['envs'],
         optimizer=setup_results['optimizer'],
+        scheduler=setup_results['scheduler'],
         fn_hook_dict=setup_results['fn_hook_dict'],
         params=setup_results['params'],
         tensorboard_writer=setup_results['tensorboard_writer'])
@@ -22,6 +23,7 @@ def train():
 def train_model(model,
                 envs,
                 optimizer,
+                scheduler,
                 fn_hook_dict,
                 params,
                 tensorboard_writer,
@@ -47,6 +49,7 @@ def train_model(model,
             envs=envs)
         run_envs_output['avg_loss_per_dt'].backward()
         optimizer.step()
+        scheduler.step()
 
         if grad_step in fn_hook_dict:
 
