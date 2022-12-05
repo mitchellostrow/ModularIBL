@@ -2022,8 +2022,8 @@ def hook_plot_model_effective_circuit(hook_input):
     weights = recurrent_matrix.reshape(-1)
     corr = np.corrcoef(hidden_corrs,weights)[0][1]
 
-    data = {'metric': ['hidden_modularity','weight_modularity','hidden_corr'],
-            'value':[corr_modularity,recurrent_mod_score,corr]}
+    data = {'metric': ['hidden_modularity','weight_modularity','hidden_corr','reward'],
+            'value':[corr_modularity,recurrent_mod_score,corr,hook_input['correct_action_taken_by_total_trials']]}
     path = os.path.join(hook_input['tensorboard_writer'].log_dir,
                              "modularity_data.csv")
     pd.DataFrame.from_dict(data).to_csv(path)

@@ -18,7 +18,7 @@ def train():
         tensorboard_writer=setup_results['tensorboard_writer'])
 
     setup_results['tensorboard_writer'].close()
-    analyze(setup_results['tensorboard_writer'].log_dir)
+    analyze(setup_results['tensorboard_writer'].log_dir[5:])
 
 def train_model(model,
                 envs,

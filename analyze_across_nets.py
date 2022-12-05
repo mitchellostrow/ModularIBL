@@ -3,6 +3,7 @@ import glob
 import pandas as pd
 import json
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 os.chdir('runs')
 
@@ -23,10 +24,11 @@ def get_params_and_modularities_paths():
 
 def extract_data_from_directories(network_params,modularity_data):
     columns =['Architecture','Connectivity Fraction', 
-                'RNN Type', 'Timescale 1', 'Timescale 2',
+                'RNN Type', 'Timescale 1', 'Timescale 2',"Timescale Difference",
                 'Hidden Size', 'Training Time', 
                 'Learning Rate', 'Weight Decay', 
-              'Hidden Modularity', 'Weight Modularity', 'Hidden-Weight Correlation']
+              'Hidden Modularity', 'Weight Modularity', 
+              'Hidden-Weight Correlation', 'Average Reward']
     df = pd.DataFrame(columns = columns)
     for i,(params, modularity_scores) in enumerate(zip(network_params,modularity_data)):
         with open(params) as f:
@@ -55,7 +57,8 @@ def extract_data_from_directories(network_params,modularity_data):
                 arch_type == 5
             timescales = params['model']['kwargs']['timescale_distributions'].split("_")[-2:]
             timescale1, timescale2 = float(timescales[0]), float(timescales[1])
-            network_data = [arch_type, conn_frac, rnntype, timescale1, timescale2, 
+            timescalediff = abs(timescale2-timescale1)
+            network_data = [arch_type, conn_frac, rnntype, timescale1, timescale2, timescalediff,
                     hidden_size, training_time, lr, weight_decay]    
         mod_scores = pd.read_csv(modularity_scores)['value'].to_list()
         network_data.extend(mod_scores)
@@ -64,11 +67,39 @@ def extract_data_from_directories(network_params,modularity_data):
             
 def plot_modularity_data(df):
     '''
-    
+    Generates 6 plots for now:
+    2 rows: hidden modularity score, r^2 between weights and hidden act
+    3 columns: connectiviy fraction (sep by rnn architecture), 
+                timescales (only ctrnn)
+                architecture type (only vanilla?)
     '''
-    
+    fig, ax = plt.subplots(2,3,figsize=(20,10))
+
+    for row,metric in enumerate(["Hidden Modularity", "Hidden-Weight Correlation"]):
+        for col,param in enumerate(["Connectivity Fraction", "Connectivity Fraction", "Timescale Difference"]):
+            if col == 0:
+                hue = "RNN Type"
+                data = df
+            elif col == 1:
+                hue = "Architecture"
+                data = df
+            elif col == 2:
+                hue = "Architecture"
+                data = df[df['RNN Type'] == 'ctrnn']
+            sns.scatterplot(data=data,x=param,y=metric,hue=hue, ax=ax[row,col])
+    plt.savefig("params_vs_modularity_metrics.png")
+    plt.close()
+
+def plot_reward_data(df):
+    #fig, ax = plt.subplots(2,2)
+    sns.scatterplot(data=df, x="Training Time", y = "Average Reward", 
+                    hue = "Connectivity Fraction",size="Architecture")
+    plt.savefig("reward_vs_params.png")
+    plt.close()
+
 
 if __name__ == "__main__":
     network_params,modularity_data = get_params_and_modularities_paths()
     df = extract_data_from_directories(network_params,modularity_data)
     print(df)
+    plot_modularity_data(df)
