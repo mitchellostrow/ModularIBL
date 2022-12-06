@@ -22,7 +22,7 @@ train_params = {
         },
     },
     'optimizer': {
-        'optimizer': 'sgd',
+        'optimizer': 'sgd', #try adam!
         'scheduler':{
             'gamma':0.999, #don't set this to be much less than 1
         },
@@ -66,27 +66,28 @@ train_params = {
 
 ### Hyperparameter space to sweep over
 hp_sweep_dict = {
-    "architecture": ['rnn','ctrnn'],
+    "architecture": ['ctrnn','rnn'],
     "arch_type": [#('none', 'none'),
                 #   ('inputblock_1', 'none'),
                 #   ('none', 'outputblock_1'),
+                  ('inputblock_1', 'readoutblock_2'),
                   ('inputblock_1', 'readoutblock_1'),
-                  ('inputblock_1', 'readoutblock_2')],
-    "connectivity": [
-                    'modular_0.02_0.02',
-                    'modular_0.04_0.04',
+                  ('none','none')],
+    "connectivity": [#'modular_0.005_0.005'
+                    'modular_0.01_0.01',
+                    #'modular_0.04_0.04',
                     'modular_0.08_0.08',
                     'modular_0.15_0.15',
                     'modular_0.25_0.25',
                     #'modular_0.5_0.5',
                     #'modular_0.8_0.8'
                     ],
-    "hidden_size": [64],
+    "hidden_size": [50,100],
     "timescale_dist": [#'none',
-                       'block_fixed_2_5',
-                       'block_fixed_6_15',
-                       'block_gaussian_15_8',
-                       'block_gaussian_20_10']
+                       'block_fixed_5_25',
+                       'block_fixed_8_4',
+                       'block_gaussian_15_25',
+                       'block_gaussian_25_10']
                     #    'block_fixed_5_50',
                     #    'block_fixed_50_5',]
                     #    'block_gaussian_2_50',
@@ -97,12 +98,11 @@ hp_sweep_dict = {
 
 def train_multiple_seeds(train_params, num_seeds=1):
     for i in range(num_seeds):
-        train_params['run']['seed'] = (i+1) * 101
-        train(train_params)
-        # try:
-        #     train(train_params)
-        # except:
-        #     continue
+        train_params['run']['seed'] = (i+1) * 105
+        try:
+            train(train_params)
+        except:
+            continue
 
 if __name__ == '__main__':
 
