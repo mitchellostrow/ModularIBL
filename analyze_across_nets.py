@@ -33,7 +33,8 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
                 'Hidden Size', 'Training Time', 
                 'Learning Rate', 'Weight Decay', 
               'Hidden Modularity', 'Weight Modularity', 
-              'Hidden-Weight Correlation', 'Average Reward', 'Learning Curve']
+              'Hidden-Weight Correlation','PC Modularity',
+              'Readout Modularity', 'Learning Curve']
     df = pd.DataFrame(columns = columns)
     for i,(params, modularity_scores,log) in enumerate(zip(network_params,modularity_data,log_data)):
         with open(params) as f:
@@ -86,27 +87,31 @@ def plot_modularity_data(df):
                 timescales (only ctrnn)
                 architecture type (only vanilla?)
     '''
-    fig, ax = plt.subplots(2,3,figsize=(20,10))
+    fig, ax = plt.subplots(4,3,figsize=(40,10))
 
-    for row,metric in enumerate(["Hidden Modularity", "Hidden-Weight Correlation"]):
+    for row,metric in enumerate(["Hidden Modularity", "Hidden-Weight Correlation","PC Modularity", "Readout Modularity"]):
         for col,param in enumerate(["Connectivity Fraction", "Connectivity Fraction", "Timescale Difference"]):
             if col == 0:
                 hue = "RNN Type"
                 data = df
+                palette = "Paired_r"
             elif col == 1:
                 hue = "Architecture"
                 data = df
+                palette = "viridis"
             elif col == 2:
                 hue = "Architecture"
                 data = df[df['RNN Type'] == 'ctrnn']
-            sns.scatterplot(data=data,x=param,y=metric,hue=hue, ax=ax[row,col],
-                            palette="Paired_r")
+                palette = "Paired_r"
+            
+            sns.lineplot(data=data,x=param,y=metric,hue=hue, ax=ax[row,col],
+                            palette=palette)
     plt.savefig("params_vs_modularity_metrics.png")
     plt.close()
 
 def plot_reward_data(df):
     #fig, ax = plt.subplots(2,2)
-    sns.scatterplot(data=df, x="Training Time", y = "Average Reward", 
+    sns.lineplot(data=df, x="Training Time", y = "Average Reward", 
                     hue = "Connectivity Fraction",size="Architecture",palette="Paired_r")
     plt.savefig("reward_vs_params.png")
     plt.close()
@@ -132,7 +137,7 @@ def plot_learning_curves(df):
                     d = np.array(d)
                     curves.append(d)
                 curves = tolerant_mean(curves)
-                plt.plot(gaussian_filter1d(curves[0],sigma=10),label=label)
+                plt.plot(gaussian_filter1d(curves[0],sigma=4),label=label)
             plot_learning_curve(data,f"Architecture {arch}")
     plt.xlabel("Gradient Steps")
     plt.ylabel("Accuracy per Trial")

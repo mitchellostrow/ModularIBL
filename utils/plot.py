@@ -2022,8 +2022,29 @@ def hook_plot_model_effective_circuit(hook_input):
     weights = recurrent_matrix.reshape(-1)
     corr = np.corrcoef(hidden_corrs,weights)[0][1]
 
-    data = {'metric': ['hidden_modularity','weight_modularity','hidden_corr','reward'],
-            'value':[corr_modularity,recurrent_mod_score,corr,hook_input['correct_action_taken_by_total_trials']]}
+    trial_readout = hook_input['trial_readout_vector'].squeeze()
+    block_readout = hook_input['block_readout_vector'].squeeze()
+    #absolute value to make our metric make sense!
+    trial_readout = np.abs(trial_readout)
+    block_readout = np.abs(block_readout)
+    
+    values = [corr_modularity,recurrent_mod_score,corr]
+
+    pcm = hook_input['angle_bw_template_and_pc']
+    pc_modularity = np.abs(pcm[0]*pcm[3] - pcm[1]*pcm[2])
+    values.append(pc_modularity)
+
+    rm = []
+    for m in [hook_input['template_1'],hook_input['template_2']]:
+        for p in [trial_readout,block_readout]:
+            c = np.dot(m,p)
+            c = c / np.linalg.norm(m) / np.linalg.norm(p)
+            rm.append(c)
+    readout_modularity = np.abs(rm[0]*rm[3] - rm[1]*rm[2])
+    values.append(readout_modularity)
+    data = {'metric': ['hidden_modularity','weight_modularity','hidden_corr', 
+                        'pc_modularity','readout_modularity'],
+            'value':values}
     path = os.path.join(hook_input['tensorboard_writer'].log_dir,
                              "modularity_data.csv")
     pd.DataFrame.from_dict(data).to_csv(path)
