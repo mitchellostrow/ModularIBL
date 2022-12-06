@@ -39,7 +39,7 @@ train_params = {
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 1001,
+        'num_grad_steps': 1501,
         'seed': 2,
     },
     'env': {
@@ -68,23 +68,24 @@ train_params = {
 hp_sweep_dict = {
     "architecture": ['ctrnn'],
     "arch_type": [('none', 'none'),
-                  ('inputblock_1', 'none'),
-                  ('none', 'outputblock_1'),
+                #   ('inputblock_1', 'none'),
+                #   ('none', 'outputblock_1'),
                   ('inputblock_1', 'outputblock_1'),
                   ('inputblock_1', 'outputblock_2')],
-    "connectivity": ['none',
+    "connectivity": [#'none',
                     'modular_0.01_0.01',
-                    'modular_0.05_0.05',
+                    # 'modular_0.05_0.05',
                     'modular_0.1_0.1',
                     'modular_0.2_0.2',
                     'modular_0.5_0.5',
-                    'modular_0.8_0.8'],
-    "hidden_size": [50, 100, 200],
+                    # 'modular_0.8_0.8'
+                    ],
+    "hidden_size": [100],
     "timescale_dist": ['none',
                        'block_gaussian_5_50',
-                       'block_gaussian_50_5',
-                       'block_fixed_5_50',
-                       'block_fixed_50_5',]
+                       'block_gaussian_50_5',]
+                    #    'block_fixed_5_50',
+                    #    'block_fixed_50_5',]
                     #    'block_gaussian_2_50',
                     #    'block_gaussian_50_2',
                     #    'block_fixed_2_50',
@@ -92,7 +93,8 @@ hp_sweep_dict = {
 }
 
 def train_multiple_seeds(train_params, num_seeds=1):
-    for _ in range(num_seeds):
+    for i in range(num_seeds):
+        train_params['run']['seed'] = (i+1) * 42
         try:
             train(train_params)
         except:
@@ -105,9 +107,9 @@ if __name__ == '__main__':
     num_rnn_seeds_total = len(hp_sweep_dict['arch_type']) * \
                           len(hp_sweep_dict['connectivity']) * \
                           len(hp_sweep_dict['hidden_size']) * \
-                          num_seeds
+                          num_seeds 
     num_ctrnn_seeds_total = num_rnn_seeds_total * len(hp_sweep_dict['timescale_dist'])
-    print("number of total models to run: ", num_rnn_seeds_total + num_ctrnn_seeds_total)
+    print("number of total models to run: ", num_rnn_seeds_total * int('rnn' in hp_sweep_dict['architecture']) + num_ctrnn_seeds_total)
     _ = input("proceed? ")
 
     model_params = train_params['model']
