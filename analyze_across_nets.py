@@ -4,33 +4,38 @@ import pandas as pd
 import json
 import seaborn as sns
 import matplotlib.pyplot as plt
+from pathlib import Path
+import numpy as np
+from scipy.ndimage import gaussian_filter1d
 
 os.chdir('runs')
 
 def get_params_and_modularities_paths():
-    '''
-    
-    '''
     network_params = []
     modularity_data = []
+    log_data = []
     for run in os.listdir(os.getcwd()):
         csvs  = glob.glob(run + '/**/*.csv', recursive=True) 
         jsons = glob.glob(run + '/**/*.json', recursive=True) 
+        logs = glob.glob(run + '/**/*/.log',recursive=True)
         for csv in csvs: 
             if csv.endswith('modularity_data.csv'): 
                 network_params.append(jsons[0])
                 modularity_data.append(csv)
-    return network_params,modularity_data
+               
+                log_data.append(Path(run, 'logging.log'))
+            
+    return network_params,modularity_data,log_data
 
-def extract_data_from_directories(network_params,modularity_data):
+def extract_data_from_directories(network_params,modularity_data,log_data):
     columns =['Architecture','Connectivity Fraction', 
                 'RNN Type', 'Timescale 1', 'Timescale 2',"Timescale Difference",
                 'Hidden Size', 'Training Time', 
                 'Learning Rate', 'Weight Decay', 
               'Hidden Modularity', 'Weight Modularity', 
-              'Hidden-Weight Correlation', 'Average Reward']
+              'Hidden-Weight Correlation', 'Average Reward', 'Learning Curve']
     df = pd.DataFrame(columns = columns)
-    for i,(params, modularity_scores) in enumerate(zip(network_params,modularity_data)):
+    for i,(params, modularity_scores,log) in enumerate(zip(network_params,modularity_data,log_data)):
         with open(params) as f:
             params = json.load(f)
             rnntype = params['model']['architecture']
@@ -62,6 +67,14 @@ def extract_data_from_directories(network_params,modularity_data):
                     hidden_size, training_time, lr, weight_decay]    
         mod_scores = pd.read_csv(modularity_scores)['value'].to_list()
         network_data.extend(mod_scores)
+        learning_curve = []
+        phrase = "INFO:root:# Correct Trials / # Total Trials: "
+        with open(log,'r') as f:
+            for line in f:
+                if phrase in line:
+                    accuracy = float(line[len(phrase):])
+                    learning_curve.append(accuracy)
+        network_data.append(learning_curve)
         df.loc[i] = network_data
     return df
             
@@ -86,20 +99,62 @@ def plot_modularity_data(df):
             elif col == 2:
                 hue = "Architecture"
                 data = df[df['RNN Type'] == 'ctrnn']
-            sns.scatterplot(data=data,x=param,y=metric,hue=hue, ax=ax[row,col])
+            sns.scatterplot(data=data,x=param,y=metric,hue=hue, ax=ax[row,col],
+                            palette="Paired_r")
     plt.savefig("params_vs_modularity_metrics.png")
     plt.close()
 
 def plot_reward_data(df):
     #fig, ax = plt.subplots(2,2)
     sns.scatterplot(data=df, x="Training Time", y = "Average Reward", 
-                    hue = "Connectivity Fraction",size="Architecture")
+                    hue = "Connectivity Fraction",size="Architecture",palette="Paired_r")
     plt.savefig("reward_vs_params.png")
     plt.close()
 
+def tolerant_mean(arrs):
+    lens = [len(i) for i in arrs]
+    arr = np.ma.empty((np.max(lens),len(arrs)))
+    arr.mask = True
+    for idx, l in enumerate(arrs):
+        arr[:len(l),idx] = l
+    return arr.mean(axis = -1), arr.std(axis=-1)
+
+def plot_learning_curves(df):
+    for arch in range(1,6):
+        data = df[df['Architecture'] == arch]
+
+        if len(data) == 0:
+            continue
+        else:
+            def plot_learning_curve(data,label):
+                curves = []
+                for d in data['Learning Curve']:
+                    d = np.array(d)
+                    curves.append(d)
+                curves = tolerant_mean(curves)
+                plt.plot(gaussian_filter1d(curves[0],sigma=10),label=label)
+            plot_learning_curve(data,f"Architecture {arch}")
+    plt.xlabel("Gradient Steps")
+    plt.ylabel("Accuracy per Trial")
+    plt.legend()
+    plt.savefig("learning_curves_arch.jpg")
+    plt.close()
+
+    for connectivity_frac in np.unique(df['Connectivity Fraction']):
+        data = df[df['Connectivity Fraction'] == connectivity_frac]
+        plot_learning_curve(data,f"Connectivity Fraction {connectivity_frac}")
+    plt.xlabel("Gradient Steps")
+    plt.ylabel("Accuracy per Trial")
+    plt.legend()
+    plt.savefig("learning_curves_connectivity.jpg")
+    plt.close()
+
+
 
 if __name__ == "__main__":
-    network_params,modularity_data = get_params_and_modularities_paths()
-    df = extract_data_from_directories(network_params,modularity_data)
+    network_params,modularity_data,log_data = get_params_and_modularities_paths()
+    df = extract_data_from_directories(network_params,modularity_data,log_data)
+    df.to_csv("analysis_data.csv")
     print(df)
     plot_modularity_data(df)
+    plot_learning_curves(df)
