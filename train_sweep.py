@@ -66,16 +66,12 @@ train_params = {
 
 ### Hyperparameter space to sweep over
 hp_sweep_dict = {
-    "architecture": ['rnn', 'ctrnn'],
+    "architecture": ['ctrnn'],
     "arch_type": [('none', 'none'),
                   ('inputblock_1', 'none'),
-                  ('inputblock_2', 'none'),
                   ('none', 'outputblock_1'),
-                  ('none', 'outputblock_2'),
                   ('inputblock_1', 'outputblock_1'),
-                  ('inputblock_1', 'outputblock_2'),
-                  ('inputblock_2', 'outputblock_1'),
-                  ('inputblock_2', 'outputblock_2')],
+                  ('inputblock_1', 'outputblock_2')],
     "connectivity": ['none',
                     'modular_0.01_0.01',
                     'modular_0.05_0.05',
@@ -88,11 +84,11 @@ hp_sweep_dict = {
                        'block_gaussian_5_50',
                        'block_gaussian_50_5',
                        'block_fixed_5_50',
-                       'block_fixed_50_5',
-                       'block_gaussian_2_50',
-                       'block_gaussian_50_2',
-                       'block_fixed_2_50',
-                       'block_fixed_50_2',]
+                       'block_fixed_50_5',]
+                    #    'block_gaussian_2_50',
+                    #    'block_gaussian_50_2',
+                    #    'block_fixed_2_50',
+                    #    'block_fixed_50_2',]
 }
 
 def train_multiple_seeds(train_params, num_seeds=1):
