@@ -27,7 +27,7 @@ def get_params_and_modularities_paths():
     return network_params,modularity_data,log_data
 
 def extract_data_from_directories(network_params,modularity_data,log_data):
-    columns =['Architecture','Connectivity Fraction', 
+    columns =['Architecture','Connectivity Fraction', "Q Modularity",
                 'RNN Type', 'Timescale 1', 'Timescale 2',"Timescale Difference",
                 'Hidden Size', 'Training Time', 
                 'Learning Rate', 'Weight Decay', 
@@ -48,6 +48,7 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
                 conn_frac = float(recurrent_mask.split("_")[-1])
             else:
                 conn_frac = 1.0
+            q_modularity = 0.5 * (1 - conn_frac) / (1 + conn_frac)
             input_mask = params['model']['kwargs']['connectivity_kwargs']['input_mask']
             readout_mask = params['model']['kwargs']['connectivity_kwargs']['readout_mask']
             if input_mask == 'none' and readout_mask == 'none':
@@ -67,7 +68,7 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
             else:
                 timescale1, timescale2 = float(timescales[0]), float(timescales[1])
             timescalediff = abs(timescale2-timescale1)
-            network_data = [arch_type, conn_frac, rnntype, timescale1, timescale2, timescalediff,
+            network_data = [arch_type, conn_frac, q_modularity,rnntype, timescale1, timescale2, timescalediff,
                     hidden_size, training_time, lr, weight_decay]    
         mod_scores = pd.read_csv(modularity_scores)['value'].to_list()
         network_data.extend(mod_scores)
@@ -90,17 +91,18 @@ def plot_modularity_data(df):
                 timescales (only ctrnn)
                 architecture type (only vanilla?)
     '''
-    fig, ax = plt.subplots(4,3,figsize=(30,20))
-
-    for row,metric in enumerate(["Hidden Modularity", "Hidden-Weight Correlation","PC Modularity", "Readout Modularity"]):
-        for col,param in enumerate(["Connectivity Fraction", "Connectivity Fraction", "Timescale Difference"]):
+    fig, ax = plt.subplots(3,3,figsize=(10,10),sharex='col',sharey='row')
+#"Hidden-Weight Correlation",
+    structural_modularity = "Q Modularity" #"Connectivity Fraction"
+    for row,metric in enumerate(["Hidden Modularity", "PC Modularity", "Readout Modularity"]):
+        for col,param in enumerate([structural_modularity, structural_modularity, "Timescale Difference"]):
             if col == 0:
                 hue = "RNN Type"
                 data = df
                 palette = "Paired_r"
             elif col == 1:
                 hue = "Architecture"
-                data = df
+                data = df[df['RNN Type'] == 'rnn']
                 palette = "viridis"
             elif col == 2:
                 hue = "Architecture"
