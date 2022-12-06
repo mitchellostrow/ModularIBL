@@ -140,10 +140,12 @@ def create_params_analyze(train_run_dir):
     return params
 
 
-def create_params_train():
-    params = utils.params.train_params
+def create_params_train(train_params=None):
+    if train_params:
+        params = train_params
+    else:
+        params = utils.params.train_params
     return params
-
 
 def create_run_id(params):
 
@@ -375,12 +377,15 @@ def setup_analyze(train_run_id):
     return setup_results
 
 
-def setup_train():
+def setup_train(train_params=None):
 
     log_dir = 'runs'
     os.makedirs(log_dir, exist_ok=True)
 
-    params = create_params_train()
+    if train_params is not None:
+        params = train_params
+    else:    
+        params = create_params_train()
     run_id = create_run_id(params=params)
     run_dir = os.path.join(log_dir, run_id + '_' + str(datetime.now()).replace(":","-"))
     os.makedirs(run_dir, exist_ok=True)

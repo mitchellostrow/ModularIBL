@@ -5,9 +5,9 @@ import utils.run
 from analyze import analyze
 from tqdm import tqdm
 
-def train():
+def train(train_params=None):
 
-    setup_results = utils.run.setup_train()
+    setup_results = utils.run.setup_train(train_params)
     output = train_model(
             model=setup_results['model'],
             envs=setup_results['envs'],

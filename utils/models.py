@@ -652,7 +652,7 @@ class RecurrentModel(nn.Module):
                 block1_taus = np.ones(block_size) * block1_tau
                 block2_taus = np.ones(block_size) * block2_tau
             self.taus = np.concatenate([block1_taus, block2_taus])                 
-            self.taus = torch.tensor(self.taus)
+        self.taus = torch.tensor(self.taus)
             
     def forward(self, model_input):
         """
