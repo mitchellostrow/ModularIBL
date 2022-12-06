@@ -12,8 +12,8 @@ import utils.run
 def analyze(train_run_id=None):
 
     if train_run_id is None:
-        #train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=100_2022-12-05 08-20-29.995680'
-        train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=50_2022-12-04 21-27-35.444630'
+        train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=100_2022-12-05 08-20-29.995680'
+        #train_run_id = 'rnn, max_stim_strength=2.5, hidden_size=50_2022-12-04 21-27-35.444630'
     setup_results = utils.run.setup_analyze(
         train_run_id=train_run_id)
 
