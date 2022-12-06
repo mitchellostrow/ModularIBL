@@ -153,7 +153,7 @@ def create_hook_fns_train(start_grad_step,
         # (plot_freq, utils.plot.hook_plot_pca_hidden_state_fixed_points),
         # (10, utils.plot.hook_plot_psytrack_fit),
         # (10, utils.plot.hook_plot_hidden_to_hidden_jacobian_eigenvalues_complex_plane),
-        (1000, hook_save_model),
+        (100, hook_save_model),
     ]
 
     train_hooks = create_hook_fns_dict(

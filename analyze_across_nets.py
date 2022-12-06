@@ -17,7 +17,6 @@ def get_params_and_modularities_paths():
     for run in os.listdir(os.getcwd()):
         csvs  = glob.glob(run + '/**/*.csv', recursive=True) 
         jsons = glob.glob(run + '/**/*.json', recursive=True) 
-        logs = glob.glob(run + '/**/*/.log',recursive=True)
         for csv in csvs: 
             if csv.endswith('modularity_data.csv'): 
                 network_params.append(jsons[0])
@@ -76,6 +75,8 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
                     accuracy = float(line[len(phrase):])
                     learning_curve.append(accuracy)
         network_data.append(learning_curve)
+        import pdb
+        pdb.set_trace()
         df.loc[i] = network_data
     return df
             

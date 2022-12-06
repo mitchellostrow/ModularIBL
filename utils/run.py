@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
 import logging
+import importlib
+
 import numpy as np
 import os
 import pandas as pd
@@ -65,7 +67,8 @@ def convert_session_data_to_ibl_changepoint_csv(session_data,
 
 
 def create_logger(run_dir):
-
+    
+    importlib.reload(logging)
     logging.basicConfig(
         filename=os.path.join(run_dir, 'logging.log'),
         level=logging.DEBUG)

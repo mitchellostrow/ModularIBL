@@ -39,7 +39,7 @@ train_params = {
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 1501,
+        'num_grad_steps': 1001,
         'seed': 2,
     },
     'env': {
@@ -66,24 +66,27 @@ train_params = {
 
 ### Hyperparameter space to sweep over
 hp_sweep_dict = {
-    "architecture": ['ctrnn'],
+    "architecture": ['ctrnn','rnn'],
     "arch_type": [('none', 'none'),
                 #   ('inputblock_1', 'none'),
                 #   ('none', 'outputblock_1'),
                   ('inputblock_1', 'outputblock_1'),
                   ('inputblock_1', 'outputblock_2')],
-    "connectivity": [#'none',
+    "connectivity": ['none',
                     'modular_0.01_0.01',
-                    # 'modular_0.05_0.05',
+                    'modular_0.02_0.02',
+                    'modular_0.05_0.05',
                     'modular_0.1_0.1',
                     'modular_0.2_0.2',
                     'modular_0.5_0.5',
-                    # 'modular_0.8_0.8'
+                    'modular_0.8_0.8'
                     ],
-    "hidden_size": [100],
+    "hidden_size": [50,100],
     "timescale_dist": ['none',
                        'block_gaussian_5_50',
-                       'block_gaussian_50_5',]
+                       'block_gaussian_50_5',
+                       'block_gaussian_2_10',
+                       'block_gaussian_10_2']
                     #    'block_fixed_5_50',
                     #    'block_fixed_50_5',]
                     #    'block_gaussian_2_50',
@@ -94,7 +97,7 @@ hp_sweep_dict = {
 
 def train_multiple_seeds(train_params, num_seeds=1):
     for i in range(num_seeds):
-        train_params['run']['seed'] = (i+1) * 42
+        train_params['run']['seed'] = (i+1) * 51
         try:
             train(train_params)
         except:
