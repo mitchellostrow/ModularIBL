@@ -61,7 +61,11 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
             elif input_mask != 'none' and readout_mask == 'none':
                 arch_type == 5
             timescales = params['model']['kwargs']['timescale_distributions'].split("_")[-2:]
-            timescale1, timescale2 = float(timescales[0]), float(timescales[1])
+            
+            if timescales == ['none']:
+                timescale1,timescale2 = 5,5
+            else:
+                timescale1, timescale2 = float(timescales[0]), float(timescales[1])
             timescalediff = abs(timescale2-timescale1)
             network_data = [arch_type, conn_frac, rnntype, timescale1, timescale2, timescalediff,
                     hidden_size, training_time, lr, weight_decay]    
@@ -75,8 +79,6 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
                     accuracy = float(line[len(phrase):])
                     learning_curve.append(accuracy)
         network_data.append(learning_curve)
-        import pdb
-        pdb.set_trace()
         df.loc[i] = network_data
     return df
             
@@ -88,7 +90,7 @@ def plot_modularity_data(df):
                 timescales (only ctrnn)
                 architecture type (only vanilla?)
     '''
-    fig, ax = plt.subplots(4,3,figsize=(40,10))
+    fig, ax = plt.subplots(4,3,figsize=(30,20))
 
     for row,metric in enumerate(["Hidden Modularity", "Hidden-Weight Correlation","PC Modularity", "Readout Modularity"]):
         for col,param in enumerate(["Connectivity Fraction", "Connectivity Fraction", "Timescale Difference"]):
