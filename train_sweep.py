@@ -22,24 +22,24 @@ train_params = {
         },
     },
     'optimizer': {
-        'optimizer': 'sgd', #try adam!
+        'optimizer': 'adam', #try adam!
         'scheduler':{
-            'gamma':0.999, #don't set this to be much less than 1
+            'gamma':0.995, #don't set this to be much less than 1
         },
         'kwargs': {
             'lr': 1e-1,
-            'momentum': 0.1,
-            'nesterov': False,
-            'weight_decay': 0.0,
+            #'momentum': 0.1,
+            #'nesterov': False,
+            #'weight_decay': 0.0,
         },
-        'description': 'Vanilla SGD'
+        'description': 'Adam'
     },
     'loss_fn': {
         'loss_fn': 'nll'
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 501,
+        'num_grad_steps': 201,
         'seed': 2,
     },
     'env': {
@@ -66,15 +66,15 @@ train_params = {
 
 ### Hyperparameter space to sweep over
 hp_sweep_dict = {
-    "architecture": ['ctrnn','rnn'],
+    "architecture": ['rnn','ctrnn'],
     "arch_type": [#('none', 'none'),
                 #   ('inputblock_1', 'none'),
                 #   ('none', 'outputblock_1'),
-                  ('inputblock_1', 'readoutblock_2'),
                   ('inputblock_1', 'readoutblock_1'),
-                  ('none','none')],
+                   ('inputblock_1', 'readoutblock_2'),],
+                  #('none','none')],
     "connectivity": [#'modular_0.005_0.005'
-                    'modular_0.01_0.01',
+                    'modular_0.02_0.02',
                     #'modular_0.04_0.04',
                     'modular_0.08_0.08',
                     'modular_0.15_0.15',
@@ -82,12 +82,12 @@ hp_sweep_dict = {
                     #'modular_0.5_0.5',
                     #'modular_0.8_0.8'
                     ],
-    "hidden_size": [50,100],
+    "hidden_size": [50],
     "timescale_dist": [#'none',
-                       'block_fixed_5_25',
-                       'block_fixed_8_4',
-                       'block_gaussian_15_25',
-                       'block_gaussian_25_10']
+                       'block_fixed_5_20',
+                       'block_fixed_20_5',
+                       'block_gaussian_5_15',
+                       'block_gaussian_15_5']
                     #    'block_fixed_5_50',
                     #    'block_fixed_50_5',]
                     #    'block_gaussian_2_50',
@@ -98,7 +98,7 @@ hp_sweep_dict = {
 
 def train_multiple_seeds(train_params, num_seeds=1):
     for i in range(num_seeds):
-        train_params['run']['seed'] = (i+1) * 105
+        train_params['run']['seed'] = (i+1) * 10
         try:
             train(train_params)
         except:

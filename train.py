@@ -19,7 +19,7 @@ def train(train_params=None):
 
     setup_results['tensorboard_writer'].close()
     #only analyze if it's trained
-    if output['hook_input']['correct_action_taken_by_total_trials'] >= 0.5:
+    if output['hook_input']['correct_action_taken_by_total_trials'] >= 0.7:
         analyze(setup_results['tensorboard_writer'].log_dir[5:])
 
 def train_model(model,
