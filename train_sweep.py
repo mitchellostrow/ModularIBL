@@ -113,7 +113,7 @@ if __name__ == '__main__':
     num_ctrnn_seeds_total = num_rnn_seeds_total * len(hp_sweep_dict['timescale_dist'])
     print("number of total models to run: ", num_rnn_seeds_total + num_ctrnn_seeds_total)
     _ = input("proceed? ")
-
+    
     model_params = train_params['model']
     for architecture in hp_sweep_dict['architecture']:
         model_params['architecture'] = architecture

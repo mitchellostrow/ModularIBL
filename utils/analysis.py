@@ -2170,7 +2170,7 @@ def correlate_pcas_with_prototypes(hidden_states_pca_results):
     template_1[:hidden_shape//2] = 1
     template_2[hidden_shape//2:] = 1
     modularity_pcs_dict = dict(
-        template_1 = template_2,
+        template_1 = template_1,
         template_2 = template_2,
         pca_components = components
     )

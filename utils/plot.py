@@ -2040,6 +2040,7 @@ def hook_plot_model_effective_circuit(hook_input):
             c = np.dot(m,p)
             c = c / np.linalg.norm(m) / np.linalg.norm(p)
             rm.append(c)
+
     readout_modularity = np.abs(rm[0]*rm[3] - rm[1]*rm[2])
     values.append(readout_modularity)
     data = {'metric': ['hidden_modularity','weight_modularity','hidden_corr', 

@@ -6,23 +6,23 @@ train_params = {
             'output_size': 2,
             'core_kwargs': {
                 'num_layers': 1,
-                'hidden_size': 50},
+                'hidden_size': 100},
             'param_init': 'default',
             'connectivity_kwargs': {
-                'input_mask': 'inputblock_1',
-                'recurrent_mask': 'modular_0.1_0.1',
-                'readout_mask': 'readoutblock_1',
+                'input_mask': 'none',
+                'recurrent_mask': 'modular_0.02_0.02',
+                'readout_mask': 'none',
             },
-            'timescale_distributions': 'block_gaussian_4_50',
+            'timescale_distributions': 'block_gaussian_5_50',
         },
     },
     'optimizer': {
         'optimizer': 'sgd',
         'scheduler':{
-            'gamma':0.999, #don't set this to be much less than 1
+            'gamma':0.9999, #don't set this to be much less than 1
         },
         'kwargs': {
-            'lr': 1e-1,
+            'lr': 1e-2,
             'momentum': 0.1,
             'nesterov': False,
             'weight_decay': 0.0,
@@ -34,8 +34,8 @@ train_params = {
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 1001,
-        'seed': 2,
+        'num_grad_steps': 2001,
+        'seed': 6,
     },
     'env': {
         'num_sessions': 1,  # batch size
