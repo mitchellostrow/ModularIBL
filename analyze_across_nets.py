@@ -6,7 +6,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pathlib import Path
 import numpy as np
-from scipy.ndimage import gaussian_filter1d
+from scipy.ndimage import gaussian_filter1d,uniform_filter1d
 
 os.chdir('runs')
 
@@ -78,11 +78,18 @@ def extract_data_from_directories(network_params,modularity_data,log_data):
         network_data.extend(mod_scores)
         learning_curve = []
         phrase = "INFO:root:# Correct Trials / # Total Trials: "
-        with open(log,'r') as f:
-            for line in f:
-                if phrase in line:
-                    accuracy = float(line[len(phrase):])
-                    learning_curve.append(accuracy)
+        learning_curve = []
+        try:
+            phrase = "INFO:root:# Correct Trials / # Total Trials: "
+            with open(log,'r') as f:
+                for line in f:
+                    if phrase in line:
+                        accuracy = float(line[len(phrase):])
+                        learning_curve.append(accuracy)
+            if len(learning_curve) > 3000:
+                learning_curve = learning_curve[:1000]
+        except FileNotFoundError:
+            pass
         network_data.append(learning_curve)
         df.loc[i] = network_data
     return df
@@ -95,14 +102,14 @@ def plot_modularity_data(df):
                 timescale s (only ctrnn)
                 architecture type (only vanilla?)
     '''
-    fig, ax = plt.subplots(3,3,figsize=(10,10),sharex='col',sharey='row')
+    fig, ax = plt.subplots(3,3,figsize=(15,10),sharex='col')#,sharey='row')
     #"Hidden-Weight Correlation",
     structural_modularity =  "Connectivity Fraction" #"Q Modularity" 
     for row,metric in enumerate(["Hidden Modularity", "PC Modularity", "Readout Modularity"]):
         for col,param in enumerate([structural_modularity, structural_modularity, "Signed Timescale Difference"]):
             if col == 0:
                 hue = "RNN Type"
-                data = df
+                data = df[df['Architecture'] == 1]
                 palette = "Paired_r"
             elif col == 1:
                 hue = "Architecture"
@@ -116,14 +123,23 @@ def plot_modularity_data(df):
             data = data.sort_values(param)
             for d in np.unique(data[hue]):
                 if col == 0:
-                    sigma = 5 
+                    sigma = 2
                 else:
                     sigma = 2
                 sm = gaussian_filter1d(data.loc[data[hue]==d][metric],sigma=sigma)
                 data.loc[data[hue]==d,metric] = sm
+
             sns.lineplot(data=data,x=param,y=metric,hue=hue, ax=ax[row,col],
                             palette=palette)
+
             #ax[row,col].legend()
+    for row in range(3):
+        for i in range(2):
+            ax[row,i].set_xlim(0,0.25)
+            ax[row,i].set(xscale="log")
+
+        ax[row,2].set_xlim(-20,20)
+        
     plt.savefig("params_vs_modularity_metrics.png")
     plt.close()
 
@@ -172,12 +188,25 @@ def plot_learning_curves(df):
     plt.savefig("learning_curves_connectivity.jpg")
     plt.close()
 
-
+def plot_connectivity_timescale_heatmap(df):
+    df = df[df['RNN Type'] == 'ctrnn']
+    modularity =  "PC Modularity"#, "Readout Modularity","Hidden Modularity",
+    fig, ax = plt.subplots(1,3,figsize=(10,5),sharex=True,sharey=True)
+    for i in range(1,4):
+        dr = df[df['Architecture'] == i]
+        sns.lineplot(data = dr,ax=ax[i-1],palette='viridis',x="Signed Timescale Difference",
+                     y = modularity, hue = "Connectivity Fraction")
+        ax[i-1].set_title(f"Architecture {i}")
+    plt.xlabel('Signed Timescale Difference')
+    plt.ylabel(modularity)
+    plt.savefig("timescale_vs_modularity_w_connectivity.png")
+    plt.close()
 
 if __name__ == "__main__":
     network_params,modularity_data,log_data = get_params_and_modularities_paths()
     df = extract_data_from_directories(network_params,modularity_data,log_data)
     df.to_csv("analysis_data.csv")
+  
     print(df)
     print("stats:")
     print("Number of each architecture")
@@ -189,3 +218,4 @@ if __name__ == "__main__":
 
     plot_modularity_data(df)
     plot_learning_curves(df)
+    plot_connectivity_timescale_heatmap(df)

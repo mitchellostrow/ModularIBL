@@ -5,7 +5,7 @@ from train import train
 
 train_params = {
     'model': {
-        'architecture': 'ctrnn',
+        'architecture': 'rnn',
         'kwargs': {
             'input_size': 3,
             'output_size': 2,
@@ -22,15 +22,15 @@ train_params = {
         },
     },
     'optimizer': {
-        'optimizer': 'adam', #try adam!
+        'optimizer': 'sgd', #try adam!
         'scheduler':{
             'gamma':0.995, #don't set this to be much less than 1
         },
         'kwargs': {
             'lr': 1e-1,
-            #'momentum': 0.1,
-            #'nesterov': False,
-            #'weight_decay': 0.0,
+            'momentum': 0.1,
+            'nesterov': False,
+            'weight_decay': 0.0,
         },
         'description': 'Adam'
     },
@@ -39,7 +39,7 @@ train_params = {
     },
     'run': {
         'start_grad_step': 0,
-        'num_grad_steps': 201,
+        'num_grad_steps': 501,
         'seed': 2,
     },
     'env': {
@@ -66,28 +66,35 @@ train_params = {
 
 ### Hyperparameter space to sweep over
 hp_sweep_dict = {
-    "architecture": ['rnn','ctrnn'],
+    "architecture": ['ctrnn','rnn'],#'ctrnn'],
     "arch_type": [#('none', 'none'),
                 #   ('inputblock_1', 'none'),
                 #   ('none', 'outputblock_1'),
-                  ('inputblock_1', 'readoutblock_1'),
-                   ('inputblock_1', 'readoutblock_2'),],
-                  #('none','none')],
-    "connectivity": [#'modular_0.005_0.005'
-                    'modular_0.02_0.02',
-                    #'modular_0.04_0.04',
-                    'modular_0.08_0.08',
-                    'modular_0.15_0.15',
+                ('inputblock_1', 'readoutblock_1'),
+                ('inputblock_1', 'readoutblock_2'),
+                  #('none','none')
+                ],
+    "connectivity": [#'modular_0.005_0.005',
+                    #'modular_0.001_0.001',
+                    'modular_0.01_0.01',
+                    'modular_0.05_0.05',
                     'modular_0.25_0.25',
-                    #'modular_0.5_0.5',
+                    'modular_0.3_0.3',
+                    'modular_0.4_0.4',
+                    'modular_0.5_0.5'
+                    #'modular_0.05_0.05',
                     #'modular_0.8_0.8'
                     ],
     "hidden_size": [50],
     "timescale_dist": [#'none',
-                       'block_fixed_5_20',
-                       'block_fixed_20_5',
-                       'block_gaussian_5_15',
-                       'block_gaussian_15_5']
+                       'block_fixed_5_50',
+                       'block_fixed_50_5',
+                       'block_fixed_2_12',
+                       'block_fixed_10_5',
+                       'block_fixed_5_10',
+                       'block_fixed_12_2',
+                       'block_gaussian_5_25',
+                       'block_gaussian_25_5']
                     #    'block_fixed_5_50',
                     #    'block_fixed_50_5',]
                     #    'block_gaussian_2_50',
@@ -98,7 +105,7 @@ hp_sweep_dict = {
 
 def train_multiple_seeds(train_params, num_seeds=1):
     for i in range(num_seeds):
-        train_params['run']['seed'] = (i+1) * 10
+        train_params['run']['seed'] = (i+1) * 132
         try:
             train(train_params)
         except:
@@ -106,7 +113,7 @@ def train_multiple_seeds(train_params, num_seeds=1):
 
 if __name__ == '__main__':
 
-    num_seeds = 2
+    num_seeds = 3
 
     num_rnn_seeds_total = len(hp_sweep_dict['arch_type']) * \
                           len(hp_sweep_dict['connectivity']) * \
