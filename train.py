@@ -53,6 +53,9 @@ def train_model(model,
         optimizer.step()
         scheduler.step()
 
+        if hasattr(model, 'apply_connectivity_masks'):
+            model.apply_connectivity_masks()
+
         if grad_step in fn_hook_dict:
 
             hidden_states = np.stack(
