@@ -24,15 +24,15 @@ train_params = {
     'optimizer': {
         'optimizer': 'sgd', #try adam!
         'scheduler':{
-            'gamma':0.995, #don't set this to be much less than 1
+            'gamma':1.0, #don't set this to be much less than 1
         },
         'kwargs': {
-            'lr': 1e-1,
-            'momentum': 0.1,
-            'nesterov': False,
-            'weight_decay': 0.0,
+            'lr': 4e-2,
+            #'momentum': 0.1,
+            #'nesterov': False,
+            #'weight_decay': 0.0,
         },
-        'description': 'Adam'
+        'description': 'SGD'
     },
     'loss_fn': {
         'loss_fn': 'nll'
@@ -66,46 +66,62 @@ train_params = {
 
 ### Hyperparameter space to sweep over
 hp_sweep_dict = {
-    "architecture": ['ctrnn','rnn'],#'ctrnn'],
-    "arch_type": [#('none', 'none'),
+    "architecture": ['ctrnn'],
+    "arch_type": [('none', 'none'),
                 #   ('inputblock_1', 'none'),
                 #   ('none', 'outputblock_1'),
-                ('inputblock_1', 'readoutblock_1'),
-                ('inputblock_1', 'readoutblock_2'),
-                  #('none','none')
+                #('inputblock_1', 'readoutblock_1'),
+                #('inputblock_1', 'readoutblock_2'),
+                #('none','none')
                 ],
-    "connectivity": [#'modular_0.005_0.005',
-                    #'modular_0.001_0.001',
-                    'modular_0.01_0.01',
+    "connectivity": [
+                    #'modular_0.01_0.01',
+                    'modular_0.02_0.02',
                     'modular_0.05_0.05',
+                    'modular_0.1_0.1',
                     'modular_0.25_0.25',
-                    'modular_0.3_0.3',
                     'modular_0.4_0.4',
-                    'modular_0.5_0.5'
-                    #'modular_0.05_0.05',
+                    'modular_0.5_0.5',
+                    #'modular_0.01_0.01',
                     #'modular_0.8_0.8'
                     ],
-    "hidden_size": [50],
+    "hidden_size": [50,100],
     "timescale_dist": [#'none',
-                       'block_fixed_5_50',
-                       'block_fixed_50_5',
-                       'block_fixed_2_12',
-                       'block_fixed_10_5',
-                       'block_fixed_5_10',
-                       'block_fixed_12_2',
-                       'block_gaussian_5_25',
-                       'block_gaussian_25_5']
+                       'block_gaussian_6_40',
+                       'block_gaussian_40_6',
+                       'block_gaussian_5_18',
+                       'block_gaussian_18_5',
+                       'block_gaussian_2_10',
+                       'block_gaussian_10_2',
+                       'block_gaussian_48_10',
+                       'block_gaussian_10_48',
+                       'block_gaussian_10_18',
+                       'block_gaussian_18_10',
+                       'block_gaussian_35_10',
+                       'block_gaussian_10_35',
+                       'block_gaussian_3_8',
+                       'block_gaussian_8_3',
+                       'block_gaussian_25_5',
+                       'block_gaussian_5_25'
+                    #    'block_fixed_2_12',
+                    #    'block_fixed_10_5',
+                    #    'block_fixed_5_10',
+                    #    'block_fixed_12_2',
+                    #    'block_gaussian_5_25',
+                    #    'block_gaussian_25_5'
                     #    'block_fixed_5_50',
-                    #    'block_fixed_50_5',]
+                    #    'block_fixed_50_5',
                     #    'block_gaussian_2_50',
                     #    'block_gaussian_50_2',
                     #    'block_fixed_2_50',
-                    #    'block_fixed_50_2',]
+                    #    'block_fixed_50_2',
+                    ]
 }
 
 def train_multiple_seeds(train_params, num_seeds=1):
     for i in range(num_seeds):
-        train_params['run']['seed'] = (i+1) * 132
+        train_params['run']['seed'] = (i+1) * 130
+
         try:
             train(train_params)
         except:
